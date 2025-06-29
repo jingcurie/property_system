@@ -20,6 +20,7 @@
     <style>
         body {
             background-color: #f8f9fa;
+            font-size:0.9rem;
         }
 
         .sidebar {
@@ -184,6 +185,79 @@
             color: #fff;
         }
 
+    .property-table td {
+        vertical-align: middle;
+        font-size: 15px;
+    }
+
+    .property-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    .table td, .table th {
+        border-color: #f1f3f5 !important;
+    }
+
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  border-radius: 10px !important;
+  border:1px solid rgb(232, 230, 230);
+  padding:0.5rem;
+}
+.card .table{
+    border-width: 0px !important;
+}
+
+    .property-img {
+        width: 64px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 6px;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .badge {
+    font-size: 0.95rem !important;  /* 默认大约是 0.75rem，改大 */
+    font-weight: 600;
+    padding: 0.5em 1em;
+}
+
+    .badge-soft {
+        border-radius: 12px;
+        font-size: 0.75rem;
+        padding: 0.4em 0.65em;
+        font-weight: 500;
+    }
+
+    .badge-available {
+        background-color: #d1e7dd;
+        color: #0f5132;
+    }
+
+    .badge-maintenance {
+        background-color: #fff3cd;
+        color: #664d03;
+    }
+
+    .badge-leased {
+        background-color: #e2e3e5;
+        color: #41464b;
+    }
+
+    .action-btn {
+        border: none;
+        background: transparent;
+        color: #6c757d;
+    }
+
+    .action-btn:hover {
+        color: #212529;
+        background-color: #f1f3f5;
+        border-radius: 6px;
+    }
+
+
         @media (max-width: 768px) { 
             .sidebar {
                 width: 64px;
@@ -229,6 +303,7 @@
   max-width: 300px;
   border-radius: 0.4rem;
   font-size: 14px;
+
 }
 
 /* 按钮统一样式优化 */
@@ -371,6 +446,7 @@
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
 
     @stack('scripts')  {{-- ✅ 加在这里，让 FilePond 初始化代码生效 --}}
+
 </body>
 
 </html>

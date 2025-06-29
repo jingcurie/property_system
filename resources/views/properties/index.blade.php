@@ -3,7 +3,9 @@
     @section('content')
         <div class="container-fluid px-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h2 class="fw-bold text-dark">房源管理</h2>
+                <h2 class="fw-bold text-dark"><i class="bi bi-house-door-fill me-2"></i> 房源管理</h2>
+    
+
                 <div class="d-flex gap-2">
                     <a href="{{ route('properties.export', request()->all()) }}" class="btn btn-outline-success">
                         <i class="bi bi-download me-1"></i> 导出CSV
@@ -19,7 +21,7 @@
 
 <form method="GET" action="{{ route('properties.index') }}" id="filter-form" class="mb-4">
   <div class="card border-0 shadow-sm">
-    <div class="card-header bg-light fw-bold d-flex px-0 flex-wrap gap-2 align-items-center">
+    <div class="card-header border-0 bg-transparent py-2 px-0 d-flex flex-wrap gap-2 align-items-center">
       <div>
         <input type="text" name="keyword" value="{{ request('keyword') }}" class="form-control" placeholder="搜索房源名、地址..." size="30">
       </div>
@@ -69,73 +71,173 @@
   </div>
 </form>
 
+@push('styles')
 <style>
-  .remove-filter {
-    position: absolute;
-    top: 2px;
-    right: 5px;
-    padding: 0;
-    border: none;
-    background: none;
-    color: #888;
-    font-size: 1rem;
+    .form-control,
+.btn {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+
+.card,
+.table-responsive {
+    border-radius: 8px;
+    /* overflow: hidden; 关键！裁切 table 内部边角 */
+}
+
+/* 表头统一字体和间距 */
+.table thead th {
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    vertical-align: middle;
+    white-space: nowrap;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e9ecef !important;
+    background-color: #f8f9fa;
+}
+
+/* 排序链接 */
+.sort-link {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    white-space: nowrap;
+    color: inherit;
+    text-decoration: none;
+}
+
+/* 上下箭头垂直堆叠 */
+.sort-icons {
+    display: flex;
+    flex-direction: column;
     line-height: 1;
-    z-index: 10;
-  }
-  .filter-box {
-    position: relative;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 0.5rem;
-    background: #f9f9f9;
-  }
+    font-size: 0.7rem;
+    margin-left: 2px;
+    color: #ced4da;
+}
+
+/* 当前排序字段箭头加深 */
+.sort-link.text-dark .sort-icons i {
+    color: #212529;
+}
+
+/* 鼠标悬停略变深 */
+.sort-link:hover {
+    color: #212529;
+}
 </style>
+@endpush
+
             <form id="batch-delete-form" method="POST" action="{{ route('properties.batchDelete') }}" onsubmit="return validateBatchDelete();">
                 @csrf
                 <!-- 表格 -->
                 <div class="card shadow-sm">
                     <div class="table-responsive">
+
+                        @if(request('keyword') || request('filters'))
+    <div class="alert alert-info d-flex justify-content-between align-items-center px-3 py-2 mb-3">
+        <div>
+            当前显示的是搜索结果
+            @if(request('keyword'))
+                ，关键词：<strong>{{ request('keyword') }}</strong>
+            @endif
+            @if(request('filters'))
+                ，已使用 {{ count(request('filters')) }} 个筛选条件
+            @endif
+        </div>
+        <a href="{{ route('properties.index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-x-circle"></i> 清除筛选
+        </a>
+    </div>
+@endif
+
                         <table class="table table-hover align-middle mb-0">
                             <thead class="table-light">
-                                <tr>
-                                    <th style="width:30px;">
-                                        <input type="checkbox" id="select-all">
-                                    </th>
-                                    <th>
-                                        @php $active = request('sort') === 'property_name';
-                                        $dir = request('direction') === 'asc' ? 'desc' : 'asc'; @endphp
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'property_name', 'direction' => $dir]) }}"
-                                            class="text-decoration-none {{ $active ? 'fw-bold text-dark' : 'text-muted' }}">
-                                            房源名称 @if($active)<i
-                                            class="bi bi-caret-{{ $dir === 'asc' ? 'down' : 'up' }}-fill"></i>@endif
-                                        </a>
-                                    </th>
-                                    <th>封面</th>
-                                    <th>地址</th>
-                                    <th>
-                                        @php $active = request('sort') === 'property_type';
-                                        $dir = request('direction') === 'asc' ? 'desc' : 'asc'; @endphp
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'property_type', 'direction' => $dir]) }}"
-                                            class="text-decoration-none {{ $active ? 'fw-bold text-dark' : 'text-muted' }}">
-                                            类型 @if($active)<i
-                                            class="bi bi-caret-{{ $dir === 'asc' ? 'down' : 'up' }}-fill"></i>@endif
-                                        </a>
-                                    </th>
-                                    <th>卧室/卫浴</th>
-                                    <th>
-                                        @php $active = request('sort') === 'monthly_rent';
-                                        $dir = request('direction') === 'asc' ? 'desc' : 'asc'; @endphp
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => 'monthly_rent', 'direction' => $dir]) }}"
-                                            class="text-decoration-none {{ $active ? 'fw-bold text-dark' : 'text-muted' }}">
-                                            租金 @if($active)<i
-                                            class="bi bi-caret-{{ $dir === 'asc' ? 'down' : 'up' }}-fill"></i>@endif
-                                        </a>
-                                    </th>
-                                    <th>状态</th>
-                                    <th>房东</th>
-                                    <th class="text-end">操作</th>
-                                </tr>
-                            </thead>
+    <tr>
+        <th style="width:30px;">
+            <input type="checkbox" id="select-all">
+        </th>
+
+        {{-- 房源名称 --}}
+        @php
+            $sortField = 'property_name';
+            $isActive = request('sort') === $sortField;
+            $dir = $isActive && request('direction') === 'asc' ? 'desc' : 'asc';
+        @endphp
+        <th>
+            <a href="{{ request()->fullUrlWithQuery(['sort' => $sortField, 'direction' => $dir]) }}"
+               class="sort-link {{ $isActive ? 'text-dark fw-bold' : 'text-muted' }}">
+                房源名称
+                <span class="sort-icons">
+                    @if ($isActive)
+                        <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
+                    @else
+                        <i class="bi bi-caret-up"></i>
+                        <i class="bi bi-caret-down"></i>
+                    @endif
+                </span>
+            </a>
+        </th>
+
+        <th>封面</th>
+        <th>地址</th>
+
+        {{-- 类型 --}}
+        @php
+            $sortField = 'property_type';
+            $isActive = request('sort') === $sortField;
+            $dir = $isActive && request('direction') === 'asc' ? 'desc' : 'asc';
+        @endphp
+        <th>
+            <a href="{{ request()->fullUrlWithQuery(['sort' => $sortField, 'direction' => $dir]) }}"
+               class="sort-link {{ $isActive ? 'text-dark fw-bold' : 'text-muted' }}">
+                类型
+                <span class="sort-icons">
+                    @if ($isActive)
+                        <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
+                    @else
+                        <i class="bi bi-caret-up"></i>
+                        <i class="bi bi-caret-down"></i>
+                    @endif
+                </span>
+            </a>
+        </th>
+
+        <th>卧室/卫浴</th>
+
+        {{-- 租金 --}}
+        @php
+            $sortField = 'monthly_rent';
+            $isActive = request('sort') === $sortField;
+            $dir = $isActive && request('direction') === 'asc' ? 'desc' : 'asc';
+        @endphp
+        <th>
+            <a href="{{ request()->fullUrlWithQuery(['sort' => $sortField, 'direction' => $dir]) }}"
+               class="sort-link {{ $isActive ? 'text-dark fw-bold' : 'text-muted' }}">
+                租金
+                <span class="sort-icons">
+                    @if ($isActive)
+                        <i class="bi {{ $dir === 'asc' ? 'bi-caret-up-fill' : 'bi-caret-down-fill' }}"></i>
+                    @else
+                        <i class="bi bi-caret-up"></i>
+                        <i class="bi bi-caret-down"></i>
+                    @endif
+                </span>
+            </a>
+        </th>
+
+        <th>状态</th>
+        <th>房东</th>
+        <th class="text-end">操作</th>
+    </tr>
+</thead>
+
+
                             <tbody>
                                 @forelse ($properties as $property)
                                     <tr>
@@ -149,7 +251,7 @@
                                             @php $cover = $property->media->firstWhere('is_cover', 1); @endphp
                                             @if($cover)
                                                 <div class="position-relative rounded border"
-                                                    style="width: 100px; height: 70px; overflow: hidden; background: #f8f9fa; cursor: pointer;"
+                                                    style="width: 80px; height: 50px; overflow: hidden; background: #f8f9fa; cursor: pointer;"
                                                     onclick="openMediaModal('{{ $property->property_id }}')">
                                                     <img src="{{ url('/media/property/' . $property->property_id . '/' . basename($cover->file_path)) }}"
                                                         class="w-100 h-100"
@@ -168,12 +270,12 @@
                                         <td>${{ number_format(optional($property->rentalInfo)->monthly_rent, 2) }}</td>
                                         <td>
                                             @php $status = optional($property->rentalInfo)->availability_status; @endphp
-                                            <span class="badge 
-                                                @if($status === 'Available') bg-success 
-                                                @elseif($status === 'Leased') bg-secondary 
-                                                @elseif($status === 'Under Maintenance') bg-warning text-dark 
-                                                    @else bg-light text-muted 
-                                                @endif">
+                                            <span class="badge badge-soft
+                                                @if($status === 'Available') badge-available 
+    @elseif($status === 'Leased') badge-leased 
+    @elseif($status === 'Under Maintenance') badge-maintenance 
+    @else badge-unknown 
+@endif">
                                                 {{ $status ?? '未知' }}
                                             </span>
                                         </td>
