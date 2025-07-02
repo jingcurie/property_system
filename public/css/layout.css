@@ -1,0 +1,38 @@
+/* layout.css */
+
+body {
+  background-color: #f8f9fa;
+  font-size: 0.9rem;
+}
+
+.main-content {
+  margin-left: 240px;
+  padding: 2rem;
+  transition: margin-left 0.3s;
+}
+
+.main-content.collapsed {
+  margin-left: 64px;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 64px;
+  }
+  .main-content.collapsed {
+    margin-left: 0;
+  }
+}
+
+/* create user form */
+.user-form-card, .permission-form-card {
+    max-width: 640px;
+    width: 100%;
+    margin:auto;
+}
+.avatar-img{
+  width: 40px; 
+  height: 40px; 
+  object-fit: cover;
+  margin-right:0.5rem;
+}

@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\RentalApplication;
 use App\Models\Property;
+use App\Models\RentalApplication;
 use Illuminate\Http\Request;
 
 class RentalApplicationController extends Controller
@@ -28,7 +28,7 @@ class RentalApplicationController extends Controller
             'phone',
             'start_date',
             'end_date',
-            'message'
+            'message',
         ]));
 
         return redirect()->route('properties.show', $property)->with('success', '申请已提交，我们将尽快联系您。');
@@ -47,16 +47,17 @@ class RentalApplicationController extends Controller
         return view('applications.index', compact('applications'));
     }
 
-
     public function updateStatus(Request $request, RentalApplication $application)
     {
         $application->update(['status' => $request->status]);
+
         return redirect()->back()->with('success', '状态已更新');
     }
 
     public function destroy(RentalApplication $application)
     {
         $application->delete();
+
         return redirect()->back()->with('success', '申请已删除');
     }
 }

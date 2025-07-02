@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Property extends Model
 {
     protected $primaryKey = 'property_id';
+
     public $incrementing = false; // 主键非自增
+
     protected $keyType = 'string'; // 主键是字符串类型
 
     protected $table = 'Properties';
@@ -30,7 +32,7 @@ class Property extends Model
         'created_at',
         'updated_at',
         'deleted_at',
-        'deleted_by'
+        'deleted_by',
     ];
 
     protected $casts = [

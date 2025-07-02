@@ -1,0 +1,151 @@
+/* sidebar.css */
+
+.sidebar {
+  height: 100vh;
+  width: 240px;
+  background-color: #1e293b;
+  padding-top: 1rem;
+  transition: width 0.3s;
+  position: fixed;
+  z-index: 1000;
+  overflow-x: visible;
+}
+
+.sidebar.collapsed {
+  width: 64px;
+}
+
+.sidebar .nav-link {
+  color: #cbd5e0;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  border-radius: 0.5rem;
+  position: relative;
+  transition: background-color 0.2s;
+  justify-content: space-between;
+}
+
+.sidebar .nav-link.active,
+.sidebar .nav-link:hover {
+  background-color: #3b82f6;
+  color: #fff;
+}
+
+.sidebar .nav-link i {
+  font-size: 1.25rem;
+  width: 24px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.sidebar .nav-link:hover i {
+  transform: scale(1.1);
+}
+
+.sidebar.collapsed .nav-link {
+  justify-content: center;
+  padding: 0.75rem;
+}
+
+.sidebar.collapsed .nav-link span,
+.sidebar.collapsed .nav-link .arrow {
+  display: none;
+}
+
+.toggle-btn {
+  position: absolute;
+  top: 50px;
+  right: -14px;
+  background-color: #3b82f6;
+  color: #fff;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 1050;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  border: 2px solid #fff;
+}
+
+.sidebar:hover .toggle-btn {
+  opacity: 1;
+}
+
+.has-submenu {
+  position: relative;
+  z-index: 9999;
+}
+
+.has-submenu .arrow {
+  font-size: 0.8rem;
+  transition: transform 0.3s ease;
+}
+
+.has-submenu.active .arrow {
+  transform: rotate(-180deg);
+}
+
+.has-submenu .floating-submenu {
+  display: none;
+}
+
+.sidebar.collapsed .has-submenu:hover .floating-submenu {
+  display: flex;
+}
+
+.floating-submenu {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  min-width: 180px;
+  background-color: #fff;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+  padding: 0.5rem 0;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  z-index: 99999;
+  transition: max-height 0.3s ease;
+}
+
+.floating-submenu a {
+  padding: 0.5rem 1rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.floating-submenu a:hover {
+  background-color: #f1f5f9;
+  color: #3b82f6;
+}
+
+.sidebar:not(.collapsed) .has-submenu.active .floating-submenu {
+  display: flex;
+  position: relative;
+  left: 0;
+  background-color: #273549;
+  border: none;
+  box-shadow: none;
+  padding-left: 1.5rem;
+}
+
+.sidebar:not(.collapsed) .floating-submenu a {
+  color: #fff;
+}
+
+.sidebar:not(.collapsed) .floating-submenu a:hover {
+  background-color: #3b82f6;
+  color: #fff;
+}

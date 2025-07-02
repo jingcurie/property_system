@@ -477,7 +477,7 @@ function updateMediaOrderInputs() {
 if (typeof dropzone !== 'undefined') {
     
     dropzone.on("success", function () {
-        alert("eee");
+        //alert("eee");
         
     });
 }

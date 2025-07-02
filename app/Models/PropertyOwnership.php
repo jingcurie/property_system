@@ -7,13 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class PropertyOwnership extends Model
 {
     protected $table = 'PropertyOwnership';
+
     protected $primaryKey = 'ownership_id';
+
     protected $fillable = [
         'property_id',
         'owner_id',
         'ownership_percentage',
         'start_date',
-        'end_date'
+        'end_date',
     ];
 
     public function property()

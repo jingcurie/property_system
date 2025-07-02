@@ -10,17 +10,20 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
 
+
     <!-- FilePond CSS -->
     <link href="https://unpkg.com/filepond@^4/dist/filepond.css" rel="stylesheet" />
-    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css" rel="stylesheet" />
+    <link href="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.css"
+        rel="stylesheet" />
 
-    
+    <!-- lucide icon -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 
 
-    <style>
+    {{-- <style>
         body {
             background-color: #f8f9fa;
-            font-size:0.9rem;
+            font-size: 0.9rem;
         }
 
         .sidebar {
@@ -185,80 +188,83 @@
             color: #fff;
         }
 
-    .property-table td {
-        vertical-align: middle;
-        font-size: 15px;
-    }
+        .property-table td {
+            vertical-align: middle;
+            font-size: 15px;
+        }
 
-    .property-table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
+        .property-table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
 
-    .table td, .table th {
-        border-color: #f1f3f5 !important;
-    }
+        .table td,
+        .table th {
+            border-color: #f1f3f5 !important;
+        }
 
-.card {
-  border: none;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  border-radius: 10px !important;
-  border:1px solid rgb(232, 230, 230);
-  padding:0.5rem;
-}
-.card .table{
-    border-width: 0px !important;
-}
+        .card {
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 10px !important;
+            border: 1px solid rgb(232, 230, 230);
+            padding: 0.5rem;
+        }
 
-    .property-img {
-        width: 64px;
-        height: 64px;
-        object-fit: cover;
-        border-radius: 6px;
-        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-    }
+        .card .table {
+            border-width: 0px !important;
+        }
 
-    .badge {
-    font-size: 0.95rem !important;  /* 默认大约是 0.75rem，改大 */
-    font-weight: 600;
-    padding: 0.5em 1em;
-}
+        .property-img {
+            width: 64px;
+            height: 64px;
+            object-fit: cover;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
 
-    .badge-soft {
-        border-radius: 12px;
-        font-size: 0.75rem;
-        padding: 0.4em 0.65em;
-        font-weight: 500;
-    }
+        .badge {
+            font-size: 0.95rem !important;
+            /* 默认大约是 0.75rem，改大 */
+            font-weight: 600;
+            padding: 0.5em 1em;
+        }
 
-    .badge-available {
-        background-color: #d1e7dd;
-        color: #0f5132;
-    }
+        .badge-soft {
+            border-radius: 12px;
+            font-size: 0.75rem;
+            padding: 0.4em 0.65em;
+            font-weight: 500;
+        }
 
-    .badge-maintenance {
-        background-color: #fff3cd;
-        color: #664d03;
-    }
+        .badge-available {
+            background-color: #ace3ca;
+            color: #0f5132;
+        }
 
-    .badge-leased {
-        background-color: #e2e3e5;
-        color: #41464b;
-    }
+        .badge-maintenance {
+            background-color: #f6c99d;
+            color: #663803;
+        }
 
-    .action-btn {
-        border: none;
-        background: transparent;
-        color: #6c757d;
-    }
+        .badge-leased {
+            background-color: #cccdcf;
+            color: #41464b;
+        }
 
-    .action-btn:hover {
-        color: #212529;
-        background-color: #f1f3f5;
-        border-radius: 6px;
-    }
+        .action-btn {
+            border: none;
+            background: transparent;
+            color: #6c757d;
+        }
+
+        .action-btn:hover {
+            color: #212529;
+            background-color: #f1f3f5;
+            border-radius: 6px;
+        }
 
 
-        @media (max-width: 768px) { 
+        @media (max-width: 768px) {
             .sidebar {
                 width: 64px;
             }
@@ -277,75 +283,85 @@
         }
 
         /* 筛选组件现代美化 */
-.filter-box {
-  position: relative;
-  background-color: #f9fafb;
-  border: 1px solid #e0e0e0;
-  border-radius: 0.5rem;
-  padding: 1rem;
-  min-width: 220px;
-}
+        .filter-box {
+            position: relative;
+            background-color: #f9fafb;
+            border: 1px solid #e0e0e0;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            min-width: 220px;
+        }
 
-.remove-filter {
-  position: absolute;
-  top: 6px;
-  right: 8px;
-  border: none;
-  background: none;
-  font-size: 1.2rem;
-  color: #999;
-  cursor: pointer;
-  line-height: 1;
-}
+        .remove-filter {
+            position: absolute;
+            top: 6px;
+            right: 8px;
+            border: none;
+            background: none;
+            font-size: 1.2rem;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
 
-/* 搜索框与按钮更精致 */
-#filter-form input[type="text"] {
-  max-width: 300px;
-  border-radius: 0.4rem;
-  font-size: 14px;
+        /* 搜索框与按钮更精致 */
+        #filter-form input[type="text"] {
+            max-width: 300px;
+            border-radius: 0.4rem;
+            font-size: 14px;
 
-}
+        }
 
-/* 按钮统一样式优化 */
-#filter-form .btn {
-  border-radius: 0.4rem;
-  font-size: 14px;
-  padding: 0.5rem 1rem;
-}
+        /* 按钮统一样式优化 */
+        #filter-form .btn {
+            border-radius: 0.4rem;
+            font-size: 14px;
+            padding: 0.5rem 1rem;
+        }
 
-#filter-form .btn-primary {
-  background-color: #2563eb;
-  border-color: #2563eb;
-}
-#filter-form .btn-primary:hover {
-  background-color: #1e40af;
-  border-color: #1e40af;
-}
+        #filter-form .btn-primary {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
 
-#filter-form .btn-secondary {
-  background-color: #e5e7eb;
-  color: #333;
-  border: 1px solid #ccc;
-}
-#filter-form .btn-secondary:hover {
-  background-color: #d1d5db;
-}
+        #filter-form .btn-primary:hover {
+            background-color: #1e40af;
+            border-color: #1e40af;
+        }
 
-/* 移动端优化：筛选区域横向滚动 */
-#filter-row {
-  overflow-x: auto;
-  flex-wrap: nowrap;
-}
+        #filter-form .btn-secondary {
+            background-color: #e5e7eb;
+            color: #333;
+            border: 1px solid #ccc;
+        }
 
-/* 分页按钮现代样式 */
-.pagination .page-link {
-  border-radius: 0.375rem;
-  padding: 0.4rem 0.75rem;
-  margin: 0 2px;
-}
+        #filter-form .btn-secondary:hover {
+            background-color: #d1d5db;
+        }
 
-    </style>
-    @stack('styles')  {{-- 必须加这个，@push 才能工作 --}}
+        /* 移动端优化：筛选区域横向滚动 */
+        #filter-row {
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+
+        /* 分页按钮现代样式 */
+        .pagination .page-link {
+            border-radius: 0.375rem;
+            padding: 0.4rem 0.75rem;
+            margin: 0 2px;
+        }
+    </style> --}}
+
+    <link href="{{ asset('css/layout.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/buttons.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/badges.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/tables.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/filters.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/pagination.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/checkbox.css') }}" rel="stylesheet">
+    @stack('styles') {{-- 必须加这个，@push 才能工作 --}}
 </head>
 
 <body>
@@ -385,6 +401,42 @@
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-clipboard-check"></i>
                             <span>租赁申请</span>
+                        </div>
+                        <i class="arrow-placeholder"></i>
+                    </a>
+                </li>
+
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" onclick="toggleSubmenu(event, this)">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-building"></i>
+                            <span>用户管理</span>
+                        </div>
+                        <i class="bi bi-caret-down-fill arrow"></i>
+                    </a>
+                    <div class="floating-submenu">
+                        <a href="{{ route('users.index') }}">
+                            <i class="bi bi-people"></i> 用户
+                        </a>
+                        <a href="{{ route('roles.index') }}">
+                            <i class="bi bi-person-gear"></i>角色
+                        </a>
+                        <a href="{{ route('permissions.index') }}">
+                            <i class="bi bi-shield-lock"></i> 权限
+                        </a>
+                    </div>
+                </li>
+
+                <li class="nav-item">
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
+                        @csrf
+                    </form>
+
+                    <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
+                        class="nav-link">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-box-arrow-right"></i> {{-- 或 lucide-log-out --}}
+                            <span>退出登录</span>
                         </div>
                         <i class="arrow-placeholder"></i>
                     </a>
@@ -432,20 +484,26 @@
         }
     </script>
     <!-- FilePond JS -->
-    {{-- <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
+    {{--
+    <script src="https://unpkg.com/filepond@^4/dist/filepond.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
-    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+    <script
+        src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
     <script src="https://unpkg.com/filepond-plugin-sort/dist/filepond-plugin-sort.js"></script> --}}
 
+    <script>
+        lucide.createIcons(); // 初始化所有图标
+    </script>
 
     <!-- FilePond JS 插件依赖：放在 @stack('scripts') 前，顺序不能乱 -->
-    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+    <script
+        src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
 
-    @stack('scripts')  {{-- ✅ 加在这里，让 FilePond 初始化代码生效 --}}
+    @stack('scripts') {{-- ✅ 加在这里，让 FilePond 初始化代码生效 --}}
 
 </body>
 

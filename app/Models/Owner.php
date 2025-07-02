@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Owner extends Model
 {
     protected $table = 'owners';
+
     protected $primaryKey = 'owner_id';
+
     public $timestamps = false;
 
     protected $fillable = [
@@ -27,7 +29,7 @@ class Owner extends Model
     // 可选：组合全名
     public function getFullNameAttribute()
     {
-        return $this->first_name . ' ' . $this->last_name;
+        return $this->first_name.' '.$this->last_name;
     }
 
     // 所拥有的房产（如果你以后要用）

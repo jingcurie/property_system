@@ -1,0 +1,33 @@
+/* filters.css */
+
+.filter-box {
+  position: relative;
+  background-color: #f9fafb;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  min-width: 220px;
+}
+
+.remove-filter {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  border: none;
+  background: none;
+  font-size: 1.2rem;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+}
+
+#filter-form input[type="text"] {
+  max-width: 300px;
+  border-radius: 0.4rem;
+  font-size: 14px;
+}
+
+#filter-row {
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}

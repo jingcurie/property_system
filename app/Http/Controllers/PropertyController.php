@@ -2,21 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Amenity;
+use App\Models\ComplianceInfo;
+use App\Models\FinancialInfo;
 use App\Models\Property;
 use App\Models\PropertyFeature;
-use App\Models\Amenity;
-use App\Models\FinancialInfo;
-use App\Models\ComplianceInfo;
-use App\Models\RentalInfo;
 use App\Models\PropertyMedia;
-use App\Models\Marketing;
-use App\Models\PropertyOwnership;
-
+use App\Models\RentalInfo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Illuminate\Support\Facades\Auth;
 
 class PropertyController extends Controller
 {
@@ -109,14 +106,13 @@ class PropertyController extends Controller
         return view('properties.index', compact('properties'));
     }
 
-
-
     /**
      * 显示创建页面
      */
     public function create()
     {
-        $property = new Property();
+        $property = new Property;
+
         return view('properties.create', compact('property'));
     }
 
@@ -170,7 +166,7 @@ class PropertyController extends Controller
                 'heating_type' => $request->heating_type,
                 'cooling_type' => $request->cooling_type,
                 'furnished' => $request->furnished ? 1 : 0,
-                'laundry' => $request->laundry ?? 'None'
+                'laundry' => $request->laundry ?? 'None',
             ]);
 
             // 子表：Amenities
@@ -185,7 +181,7 @@ class PropertyController extends Controller
                     'has_fridge',
                     'has_stove',
                     'has_microwave',
-                    'has_air_conditioning'
+                    'has_air_conditioning',
                 ])
             ));
 
@@ -220,7 +216,7 @@ class PropertyController extends Controller
                     'insurance_policy_number',
                     'fire_safety_compliance',
                     'accessibility_compliance',
-                    'last_inspection_date'
+                    'last_inspection_date',
                 ])
             ));
 
@@ -229,7 +225,7 @@ class PropertyController extends Controller
             // 保存媒体文件
             if ($request->has('uploaded_files')) {
                 foreach ($request->input('uploaded_files', []) as $tempPath) {
-                    if (!$tempPath || !is_string($tempPath)) {
+                    if (! $tempPath || ! is_string($tempPath)) {
                         continue;
                     }
 
@@ -269,11 +265,12 @@ class PropertyController extends Controller
                     ->update(['sort_order' => $index]);
             }
 
-
             DB::commit();
+
             return redirect()->route('properties.index')->with('success', '房源已成功添加');
         } catch (\Exception $e) {
             DB::rollback();
+
             return back()->withErrors(['error' => '保存失败：' . $e->getMessage()])->withInput();
         }
     }
@@ -289,13 +286,13 @@ class PropertyController extends Controller
             'rentalInfo',
             'financialInfo',
             'complianceInfo',
-            'media'
+            'media',
         ])->findOrFail($propertyId);
 
         $property = Property::with([
             'media' => function ($q) {
                 $q->orderBy('sort_order');
-            }
+            },
         ])->findOrFail($propertyId);
 
         return view('properties.edit', compact('property'));
@@ -332,7 +329,7 @@ class PropertyController extends Controller
                 'latitude',
                 'longitude',
                 'total_floors',
-                'description'
+                'description',
             ]));
 
             $property->feature()->update($request->only([
@@ -344,7 +341,7 @@ class PropertyController extends Controller
                 'heating_type',
                 'cooling_type',
                 'furnished',
-                'laundry'
+                'laundry',
             ]));
 
             $amenityData = $request->only([
@@ -356,13 +353,12 @@ class PropertyController extends Controller
                 'has_fridge',
                 'has_stove',
                 'has_microwave',
-                'has_air_conditioning'
+                'has_air_conditioning',
             ]);
 
-            if (!empty($amenityData)) {
+            if (! empty($amenityData)) {
                 $property->amenity()->update($amenityData);
             }
-
 
             $property->rentalInfo()->update([
                 'availability_status' => $request->availability_status,
@@ -380,7 +376,7 @@ class PropertyController extends Controller
                 'management_fee_percentage',
                 'annual_property_tax',
                 'hst_included',
-                'maintenance_fund'
+                'maintenance_fund',
             ]));
 
             $property->complianceInfo()->update($request->only([
@@ -389,7 +385,7 @@ class PropertyController extends Controller
                 'insurance_policy_number',
                 'fire_safety_compliance',
                 'accessibility_compliance',
-                'last_inspection_date'
+                'last_inspection_date',
             ]));
 
             // ✅ 先删除旧媒体记录 & 文件
@@ -398,7 +394,7 @@ class PropertyController extends Controller
 
             // 删除被移除的旧媒体
             $property->media->each(function ($media) use ($keepFiles) {
-                if (!in_array($media->file_path, $keepFiles)) {
+                if (! in_array($media->file_path, $keepFiles)) {
                     Storage::delete($media->file_path);
                     $media->delete();
                 }
@@ -408,7 +404,7 @@ class PropertyController extends Controller
             if ($request->has('uploaded_files')) {
                 foreach ($request->input('uploaded_files', []) as $tempPath) {
 
-                    if (!$tempPath || !is_string($tempPath)) {
+                    if (! $tempPath || ! is_string($tempPath)) {
                         continue;
                     }
 
@@ -434,7 +430,7 @@ class PropertyController extends Controller
                 }
             }
 
-            // 更新封面图（无论是旧图或新图）   
+            // 更新封面图（无论是旧图或新图）
             if ($cover) {
                 PropertyMedia::where('property_id', $property->property_id)->update(['is_cover' => 0]);
                 PropertyMedia::where('property_id', $property->property_id)
@@ -451,9 +447,11 @@ class PropertyController extends Controller
             }
 
             DB::commit();
+
             return redirect()->route('properties.index')->with('success', '房源信息已更新');
         } catch (\Exception $e) {
             DB::rollBack();
+
             return back()->withErrors(['error' => '更新失败：' . $e->getMessage()])->withInput();
         }
     }
@@ -514,7 +512,7 @@ class PropertyController extends Controller
                 '卧室',
                 '卫浴',
                 '状态',
-                '房东'
+                '房东',
             ]);
 
             foreach ($properties as $p) {
@@ -539,6 +537,7 @@ class PropertyController extends Controller
     public function show($id)
     {
         $property = Property::with(['feature', 'media', 'rentalInfo', 'ownership.owner'])->findOrFail($id);
+
         return view('properties.show', compact('property'));
     }
 
@@ -546,7 +545,7 @@ class PropertyController extends Controller
     {
         $ids = $request->input('selected_ids', []);
 
-        if (!is_array($ids) || count($ids) === 0) {
+        if (! is_array($ids) || count($ids) === 0) {
             return back()->with('error', '请选择要删除的房源');
         }
 

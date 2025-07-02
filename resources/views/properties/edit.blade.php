@@ -20,8 +20,20 @@
 
 {{-- 关键：确保 styles 和 scripts 被注入 --}}
 @push('styles')
-    @stack('styles')
-@endpush
+    <style>
+        /* 紧凑样式用于包含水电费项目 checkbox */
+        .utility-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            padding: 0.5rem 0;
+        }
+        .utility-checkbox-group .form-check {
+            flex: 0 0 auto;
+            margin-bottom: 0;
+        }
+    </style>
+    @endpush
 
 @push('scripts')
     @stack('scripts')

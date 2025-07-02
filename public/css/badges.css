@@ -1,0 +1,63 @@
+/* badges.css */
+
+.badge {
+  font-size: 0.95rem !important;
+  font-weight: 600;
+  padding: 0.5em 1em;
+}
+
+.badge-soft {
+  border-radius: 12px;
+  font-size: 0.75rem;
+  padding: 0.4em 0.65em;
+  font-weight: 500;
+}
+
+.badge-available {
+  background-color: #ace3ca;
+  color: #0f5132;
+}
+
+.badge-maintenance {
+  background-color: #f6c99d;
+  color: #663803;
+}
+
+.badge-leased {
+  background-color: #cccdcf;
+  color: #41464b;
+}
+
+.badge-admin {
+    background-color: #dc3545; /* 红色 */
+    color: white;
+}
+.badge-manager {
+    background-color: #f0ad4e; /* 橙黄色 */
+    color: white;
+}
+.badge-finance {
+    background-color: #fd7e14; /* 深橙 */
+    color: white;
+}
+.badge-support {
+    background-color: #ffc107; /* 黄色 */
+    color: black;
+}
+.badge-agent {
+    background-color: #467cef; /* 淡蓝色 */
+    color: white;
+}
+.badge-user {
+    background-color: #28a745; /* 绿色 */
+    color: white;
+}
+.badge-viewer {
+    background-color: #17a2b8; /* 青色 */
+    color: white;
+}
+.badge-default-role {
+    background-color: #6c757d; /* 灰色 */
+    color: white;
+}
+

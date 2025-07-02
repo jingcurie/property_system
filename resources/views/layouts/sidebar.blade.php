@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', '物业管理系统') }}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
+    {{-- <style>
         body {
             display: flex;
             min-height: 100vh;
@@ -32,7 +32,7 @@
             background: #f8f9fa;
             padding: 20px;
         }
-    </style>
+    </style> --}}
 </head>
 <body>
     <div class="sidebar">

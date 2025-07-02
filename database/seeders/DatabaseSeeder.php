@@ -19,5 +19,12 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        $this->call([
+            PermissionSeeder::class,
+        ]);
+
+        $user = User::where('email', 'test@example.com')->first();
+        $user->assignRole('admin'); // 或 'manager' 等
     }
 }

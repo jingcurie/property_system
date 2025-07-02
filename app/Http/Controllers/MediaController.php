@@ -10,22 +10,22 @@ class MediaController extends Controller
 {
     public function tempUpload(Request $request)
     {
-        if (!$request->hasFile('file')) {
+        if (! $request->hasFile('file')) {
             return response()->json(['error' => '无上传文件'], 400);
         }
 
         $file = $request->file('file');
 
         $ext = $file->getClientOriginalExtension();
-        $filename = Str::uuid()->toString() . '.' . $ext;
+        $filename = Str::uuid()->toString().'.'.$ext;
 
         // 保存至临时目录 storage/app/temp/property-media
-        //$path = $file->storeAs('temp/property-media', $filename);
+        // $path = $file->storeAs('temp/property-media', $filename);
 
         $tempDir = 'temp/property-media';
 
         // 若目录不存在则创建
-        if (!Storage::exists($tempDir)) {
+        if (! Storage::exists($tempDir)) {
             Storage::makeDirectory($tempDir);
         }
 
@@ -44,7 +44,7 @@ class MediaController extends Controller
         $filePath = "property_media/{$path}";
 
         // 2. 检查文件是否存在
-        if (!Storage::disk('private')->exists($filePath)) {
+        if (! Storage::disk('private')->exists($filePath)) {
             abort(404, "文件不存在: {$filePath}");
         }
 

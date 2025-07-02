@@ -1,0 +1,94 @@
+.btn {
+  border-radius: 0.45rem;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0.45rem 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s ease-in-out;
+  box-shadow: none;
+}
+
+/* 主按钮：柔和蓝 */
+.btn-primary {
+  background-color: #3b82f6;
+  border: 1px solid #3b82f6;
+  color: #fff;
+}
+.btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* 次按钮：浅灰背景 + 深灰字 */
+.btn-secondary {
+  background-color: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+.btn-secondary:hover {
+  background-color: #e5e7eb;
+}
+
+/* 删除按钮：克制红色 */
+.btn-danger {
+  background-color: #f87171;
+  color: #fff;
+  border: 1px solid #f87171;
+}
+.btn-danger:hover {
+  background-color: #ef4444;
+}
+
+/* 导出按钮：稳重灰色 */
+.btn-export {
+  background-color: #6b7280;
+  color: #fff;
+  border: 1px solid #6b7280;
+}
+.btn-export:hover {
+  background-color: #4b5563;
+}
+
+/* 表格中小操作按钮（如查看编辑） */
+.action-btn {
+  background: none;
+  color: #6c757d;
+  border: none;
+  font-size: 0.9rem;
+}
+.action-btn:hover {
+  color: #212529;
+  background-color: #f1f5f9;
+  border-radius: 6px;
+}
+
+/* 禁用状态 */
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* action button */
+.btn-action-menu {
+  width: 36px;
+  height: 36px;
+  border: 1px solid #cdd0d3; /* neutral-400 */
+  border-radius: 50%;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  color: #6b7280; /* text-gray-500 */
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-action-menu:hover {
+  background-color: #f3f4f6; /* light hover */
+  border-color: #6b7280;
+  color: #374151;
+}
+
