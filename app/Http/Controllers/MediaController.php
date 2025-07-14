@@ -17,7 +17,7 @@ class MediaController extends Controller
         $file = $request->file('file');
 
         $ext = $file->getClientOriginalExtension();
-        $filename = Str::uuid()->toString().'.'.$ext;
+        $filename = Str::uuid()->toString() . '.' . $ext;
 
         // 保存至临时目录 storage/app/temp/property-media
         // $path = $file->storeAs('temp/property-media', $filename);

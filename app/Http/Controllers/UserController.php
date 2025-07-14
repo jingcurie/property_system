@@ -8,12 +8,13 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
 
 class UserController extends Controller
-{
-    public function __construct()
+{   public function __construct()
     {
-        // $this->middleware ('role:admin'); // 👈 这里就是触发报错的地方
+        $this->middleware('auth');
     }
 
     /**
@@ -21,13 +22,12 @@ class UserController extends Controller
      */
     public function index(Request $request)
     {
+        $query = User::with('roles')->whereNull('deleted_at');
+
         $keyword = $request->input('keyword');
 
-        // 排序字段与方向，设置默认值
         $sortField = $request->input('sort', 'created_at');
         $sortDirection = $request->input('direction', 'desc');
-
-        // 允许排序的字段，防止 SQL 注入
         $allowedSortFields = ['name', 'email', 'created_at'];
 
         if (!in_array($sortField, $allowedSortFields)) {
@@ -38,14 +38,31 @@ class UserController extends Controller
             $sortDirection = 'desc';
         }
 
-        $users = User::query()
-            ->when($keyword, function ($query) use ($keyword) {
-                $query->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('email', 'like', "%{$keyword}%");
-            })
+        // 关键词搜索
+        if ($keyword) {
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'like', "%{$keyword}%")
+                    ->orWhere('email', 'like', "%{$keyword}%")
+                    ->orWhereHas('roles', fn($qr) => $qr->where('name', 'like', "%{$keyword}%"));
+            });
+        }
+
+        // 筛选条件
+        if ($request->filled('filters')) {
+            foreach ($request->filters as $filter) {
+                $value = $request->input("filter_values.$filter");
+                match ($filter) {
+                    'name' => $query->whereHas('roles', fn($q) => $q->where('name', $value)),
+                    default => null
+                };
+            }
+        }
+
+        $users = $query
             ->orderBy($sortField, $sortDirection)
             ->paginate(10)
-            ->withQueryString(); // 保持查询参数在分页中不丢失
+            ->withQueryString();
+        logger()->info($request->all());
 
         return view('users.index', compact('users'));
     }
@@ -179,11 +196,16 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         $user = User::findOrFail($id);
-        $user->update([
-            'is_active' => 0,
-            'deleted_at' => now(),
-            'deleted_by' => Auth::id(),
-        ]);
+        Log::info('Delete method called', ['info' => Auth::id()]);
+
+        if ($user->name === 'admin') {
+            return redirect()->back()->with('error', '无法删除超级管理员账户');
+        }
+
+        $user->deleted_at = now();
+        $user->deleted_by = Auth::id();
+        $user->is_active = 0;
+        $user->save();
 
         return redirect()->route('users.index')->with('success', '用户已删除');
     }
@@ -192,16 +214,41 @@ class UserController extends Controller
     {
         $ids = $request->input('selected_ids', []);
 
+        $users = User::whereIn('id', $ids)->get();
+
+        foreach ($users as $user) {
+            if ($user->name === 'admin') {
+                return redirect()->back()->with('error', '包含超级管理员 admin，操作被中止');
+            }
+        }
+
+
         if (! is_array($ids) || count($ids) === 0) {
             return back()->with('error', '请选择要删除的房源');
         }
 
-        $count = User::whereIn('user_id', $ids)->update([
+        $count = User::whereIn('id', $ids)->update([
             'is_active' => 0,
             'deleted_at' => now(),
             'deleted_by' => Auth::id(),
         ]);
 
         return redirect()->route('users.index')->with('success', "成功删除 {$count} 个用户");
+    }
+
+    public function toggleStatus(Request $request, User $user)
+    {
+        if ($user->name === 'admin') {
+            return response()->json(['message' => '不能禁用超级管理员'], 403);
+        }
+
+        $request->validate([
+            'is_active' => 'required|boolean',
+        ]);
+
+        $user->is_active = $request->is_active;
+        $user->save();
+
+        return response()->json(['message' => '用户状态已更新']);
     }
 }

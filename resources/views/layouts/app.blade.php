@@ -19,339 +19,7 @@
     <!-- lucide icon -->
     <script src="https://unpkg.com/lucide@latest"></script>
 
-
-    {{-- <style>
-        body {
-            background-color: #f8f9fa;
-            font-size: 0.9rem;
-        }
-
-        .sidebar {
-            height: 100vh;
-            width: 240px;
-            background-color: #1e293b;
-            padding-top: 1rem;
-            transition: width 0.3s;
-            position: fixed;
-            z-index: 1000;
-            overflow-x: visible;
-        }
-
-        .sidebar.collapsed {
-            width: 64px;
-        }
-
-        .sidebar .nav-link {
-            color: #cbd5e0;
-            padding: 0.75rem 1rem;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            gap: rem;
-            white-space: nowrap;
-            border-radius: 0.5rem;
-            position: relative;
-            transition: background-color 0.2s;
-            justify-content: space-between;
-        }
-
-        .sidebar .nav-link.active,
-        .sidebar .nav-link:hover {
-            background-color: #3b82f6;
-            color: #fff;
-        }
-
-        .sidebar .nav-link i {
-            font-size: 1.25rem;
-            width: 24px;
-            text-align: center;
-            transition: transform 0.2s ease;
-        }
-
-        .sidebar .nav-link:hover i {
-            transform: scale(1.1);
-        }
-
-        .sidebar.collapsed .nav-link {
-            justify-content: center;
-            padding: 0.75rem;
-        }
-
-        .sidebar.collapsed .nav-link span,
-        .sidebar.collapsed .nav-link .arrow {
-            display: none;
-        }
-
-        .main-content {
-            margin-left: 240px;
-            padding: 2rem;
-            transition: margin-left 0.3s;
-        }
-
-        .main-content.collapsed {
-            margin-left: 64px;
-        }
-
-        .toggle-btn {
-            position: absolute;
-            top: 50px;
-            right: -14px;
-            background-color: #3b82f6;
-            color: #fff;
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 1050;
-            opacity: 0;
-            transition: opacity 0.2s;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-            border: 2px solid #fff;
-        }
-
-        .sidebar:hover .toggle-btn {
-            opacity: 1;
-        }
-
-        .has-submenu {
-            position: relative;
-            z-index: 9999;
-        }
-
-        .has-submenu .arrow {
-            font-size: 0.8rem;
-            transition: transform 0.3s ease;
-        }
-
-        .has-submenu.active .arrow {
-            transform: rotate(-180deg);
-        }
-
-        .has-submenu .floating-submenu {
-            display: none;
-        }
-
-        .sidebar.collapsed .has-submenu:hover .floating-submenu {
-            display: flex;
-        }
-
-        .floating-submenu {
-            position: absolute;
-            top: 0;
-            left: 100%;
-            min-width: 180px;
-            background-color: #fff;
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-            padding: 0.5rem 0;
-            flex-direction: column;
-            border: 1px solid #e2e8f0;
-            z-index: 99999;
-            transition: max-height 0.3s ease;
-        }
-
-        .floating-submenu a {
-            padding: 0.5rem 1rem;
-            color: #1e293b;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.875rem;
-            white-space: nowrap;
-        }
-
-        .floating-submenu a:hover {
-            background-color: #f1f5f9;
-            color: #3b82f6;
-        }
-
-        .sidebar:not(.collapsed) .has-submenu.active .floating-submenu {
-            display: flex;
-            position: relative;
-            left: 0;
-            /* top: 0.5rem; */
-            background-color: #273549;
-            border: none;
-            box-shadow: none;
-            padding-left: 1.5rem;
-        }
-
-        .sidebar:not(.collapsed) .floating-submenu a {
-            color: #fff;
-        }
-
-        .sidebar:not(.collapsed) .floating-submenu a:hover {
-            background-color: #3b82f6;
-            color: #fff;
-        }
-
-        .property-table td {
-            vertical-align: middle;
-            font-size: 15px;
-        }
-
-        .property-table tbody tr:hover {
-            background-color: #f8f9fa;
-        }
-
-        .table td,
-        .table th {
-            border-color: #f1f3f5 !important;
-        }
-
-        .card {
-            border: none;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-            border-radius: 10px !important;
-            border: 1px solid rgb(232, 230, 230);
-            padding: 0.5rem;
-        }
-
-        .card .table {
-            border-width: 0px !important;
-        }
-
-        .property-img {
-            width: 64px;
-            height: 64px;
-            object-fit: cover;
-            border-radius: 6px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .badge {
-            font-size: 0.95rem !important;
-            /* 默认大约是 0.75rem，改大 */
-            font-weight: 600;
-            padding: 0.5em 1em;
-        }
-
-        .badge-soft {
-            border-radius: 12px;
-            font-size: 0.75rem;
-            padding: 0.4em 0.65em;
-            font-weight: 500;
-        }
-
-        .badge-available {
-            background-color: #ace3ca;
-            color: #0f5132;
-        }
-
-        .badge-maintenance {
-            background-color: #f6c99d;
-            color: #663803;
-        }
-
-        .badge-leased {
-            background-color: #cccdcf;
-            color: #41464b;
-        }
-
-        .action-btn {
-            border: none;
-            background: transparent;
-            color: #6c757d;
-        }
-
-        .action-btn:hover {
-            color: #212529;
-            background-color: #f1f3f5;
-            border-radius: 6px;
-        }
-
-
-        @media (max-width: 768px) {
-            .sidebar {
-                width: 64px;
-            }
-
-            .main-content {
-                margin-left: 64px;
-            }
-
-            .sidebar.collapsed {
-                width: 0;
-            }
-
-            .main-content.collapsed {
-                margin-left: 0;
-            }
-        }
-
-        /* 筛选组件现代美化 */
-        .filter-box {
-            position: relative;
-            background-color: #f9fafb;
-            border: 1px solid #e0e0e0;
-            border-radius: 0.5rem;
-            padding: 1rem;
-            min-width: 220px;
-        }
-
-        .remove-filter {
-            position: absolute;
-            top: 6px;
-            right: 8px;
-            border: none;
-            background: none;
-            font-size: 1.2rem;
-            color: #999;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        /* 搜索框与按钮更精致 */
-        #filter-form input[type="text"] {
-            max-width: 300px;
-            border-radius: 0.4rem;
-            font-size: 14px;
-
-        }
-
-        /* 按钮统一样式优化 */
-        #filter-form .btn {
-            border-radius: 0.4rem;
-            font-size: 14px;
-            padding: 0.5rem 1rem;
-        }
-
-        #filter-form .btn-primary {
-            background-color: #2563eb;
-            border-color: #2563eb;
-        }
-
-        #filter-form .btn-primary:hover {
-            background-color: #1e40af;
-            border-color: #1e40af;
-        }
-
-        #filter-form .btn-secondary {
-            background-color: #e5e7eb;
-            color: #333;
-            border: 1px solid #ccc;
-        }
-
-        #filter-form .btn-secondary:hover {
-            background-color: #d1d5db;
-        }
-
-        /* 移动端优化：筛选区域横向滚动 */
-        #filter-row {
-            overflow-x: auto;
-            flex-wrap: nowrap;
-        }
-
-        /* 分页按钮现代样式 */
-        .pagination .page-link {
-            border-radius: 0.375rem;
-            padding: 0.4rem 0.75rem;
-            margin: 0 2px;
-        }
-    </style> --}}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <link href="{{ asset('css/layout.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
@@ -361,6 +29,7 @@
     <link href="{{ asset('css/filters.css') }}" rel="stylesheet">
     <link href="{{ asset('css/pagination.css') }}" rel="stylesheet">
     <link href="{{ asset('css/checkbox.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/tooltip.css') }}" rel="stylesheet">
     @stack('styles') {{-- 必须加这个，@push 才能工作 --}}
 </head>
 
@@ -381,7 +50,7 @@
                     <a href="#" class="nav-link" onclick="toggleSubmenu(event, this)">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-building"></i>
-                            <span>房源管理</span>
+                            <span>房源管理</span> 
                         </div>
                         <i class="bi bi-caret-down-fill arrow"></i>
                     </a>
@@ -396,7 +65,7 @@
                 </li>
 
                 <li class="nav-item">
-                    <a href="{{ route('applications.index') }}"
+                    <a href="{{ route('rental_applications.index') }}"
                         class="nav-link {{ request()->routeIs('applications.*') ? 'active' : '' }}">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-clipboard-check"></i>
@@ -445,11 +114,80 @@
         </div>
 
         <div id="main-content" class="main-content flex-grow-1">
-            <nav class="navbar navbar-expand navbar-light bg-white border-bottom mb-4">
-                <div class="container-fluid">
-                    <span class="navbar-text">欢迎使用物业管理系统</span>
+            <nav
+                class="navbar navbar-expand navbar-light bg-white border-bottom shadow-sm w-100 d-flex justify-content-between align-items-center px-3 py-3">
+                <!-- 左侧 LOGO / 欢迎语 -->
+                <h1>{{ __('passwords.reset') }}</h1><span class="text-muted small">语言：{{ app()->getLocale() }}</span>
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-house-door-fill fs-5 text-primary"></i>
+                    <span class="fw-bold">{{ __('欢迎使用物业管理系统') }}</span>
+                </div>
+
+                <!-- 右侧功能区 -->
+                <div class="d-flex align-items-center gap-4">
+                    <!-- 消息图标 -->
+                    <a href="#" class="text-dark position-relative d-inline-block" style="line-height: 1;">
+                        <i class="bi bi-envelope fs-5"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge bg-danger text-white"
+                            style="font-size: 0.6rem; padding: 0.25em 0.45em; border-radius: 999px;">
+                            5
+                        </span>
+                    </a>
+
+
+
+                    <!-- 系统设置 -->
+                    {{-- <a href="{{ route('settings.index') }}" class="text-dark"> --}}
+                    <a href="/" class="text-dark">
+                        <i class="bi bi-gear fs-5"></i>
+                    </a>
+
+                    <!-- 语言切换 -->
+                    <div class="dropdown">
+                        <a class="dropdown-toggle text-dark" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            🌐 {{ app()->getLocale() === 'zh_CN' ? '中文' : 'English' }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{{ route('lang.switch', 'en') }}">English</a></li>
+                            <li><a class="dropdown-item" href="{{ route('lang.switch', 'zh') }}">中文</a></li>
+                        </ul>
+                    </div>
+
+                    <!-- 用户头像与名称 -->
+                    <div class="dropdown">
+                        <a class="d-flex align-items-center text-dark dropdown-toggle" href="#" role="button"
+                            data-bs-toggle="dropdown">
+                            <img src="{{ Auth::user()->avatar_url ?? '/images/default-avatar.png' }}" alt="Avatar"
+                                class="rounded-circle me-2" width="32" height="32">
+                            <span>{{ Auth::user()->name }}</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            {{-- <li><a class="dropdown-item" href="{{ route('profile') }}">{{ __('个人资料') }}</a></li> --}}
+                            <li><a class="dropdown-item" href="/">{{ __('个人资料') }}</a></li>
+                            <li><a class="dropdown-item" href="#"
+                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">{{ __('退出登录') }}</a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </nav>
+
+            <div class="">
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+                    </div>
+                @endif
+
+                @if (session('error'))
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="关闭"></button>
+                    </div>
+                @endif
+            </div>
 
             <main>
                 @yield('content')
@@ -497,11 +235,58 @@
     </script>
 
     <!-- FilePond JS 插件依赖：放在 @stack('scripts') 前，顺序不能乱 -->
-    <script
-        src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
+    <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.js"></script>
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.js"></script>
     <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.js"></script>
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // 成功提示
+        function showSuccess(message = '操作成功！') {
+            Swal.fire({
+                icon: 'success',
+                title: '成功',
+                text: message,
+                timer: 1800,
+                showConfirmButton: false
+            });
+        }
+
+        // 错误提示
+        function showError(message = '操作失败，请稍后重试！') {
+            Swal.fire({
+                icon: 'error',
+                title: '错误',
+                text: message,
+            });
+        }
+
+        // 警告提示
+        function showWarning(message = '警告信息') {
+            Swal.fire({
+                icon: 'warning',
+                title: '请注意',
+                text: message,
+            });
+        }
+
+        // 确认框（带回调）
+        function showConfirm(message = '确定执行此操作？', callback) {
+            Swal.fire({
+                icon: 'question',
+                title: '确认操作',
+                text: message,
+                showCancelButton: true,
+                confirmButtonText: '确认',
+                cancelButtonText: '取消'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    callback();
+                }
+            });
+        }
+    </script>
 
     @stack('scripts') {{-- ✅ 加在这里，让 FilePond 初始化代码生效 --}}
 

@@ -85,4 +85,12 @@ class Property extends Model
     {
         return $this->hasOne(PropertyOwnership::class, 'property_id', 'property_id');
     }
+
+    // app/Models/RentalApplication.php
+
+public function files()
+{
+    return $this->morphMany(File::class, 'fileable');
+}
+
 }

@@ -92,3 +92,7 @@
   color: #374151;
 }
 
+.toggle-active {
+    transform: scale(1.4);
+}
+

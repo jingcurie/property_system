@@ -6,12 +6,16 @@
   border:1px solid rgb(232, 230, 230);
   padding:0.5rem;
 }
+
+.card .card-header{
+  border-radius: 10px 10px 0 0 !important;
+}
 .card .table{
     border-width: 0px !important;
 }
 
 .table-responsive {
-    overflow-x: auto;
+    overflow-x: visible;
     -webkit-overflow-scrolling: touch;
 }
 
@@ -32,7 +36,7 @@
   font-size: 15px;
 }
 
-.property-table tbody tr:hover {
+.property-table tbody tr:hover{
   background-color: #f8f9fa;
 }
 

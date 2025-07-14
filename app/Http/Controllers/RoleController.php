@@ -17,10 +17,10 @@ class RoleController extends Controller
     public function index()
     {
         $roles = Role::with(['permissions'])->withCount('users')->get()->map(function ($role) {
-        // 获取权限对象集合
-        $role->display_permissions = $role->permissions;
-        return $role;
-    });
+            // 获取权限对象集合
+            $role->display_permissions = $role->permissions;
+            return $role;
+        });
 
         return view('roles.index', compact('roles'));
     }
@@ -30,7 +30,8 @@ class RoleController extends Controller
      */
     public function create()
     {
-        return view('roles.create');
+        $permissions = Permission::orderBy('group')->get()->groupBy('group');
+        return view('roles.create', compact('permissions'));
     }
 
     /**
@@ -40,11 +41,14 @@ class RoleController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|unique:roles,name',
-            'decription' => 'required|description',
             'permissions' => 'nullable|array',
         ]);
 
-        $role = Role::create(['name' => $validated['name']]);
+        $role = Role::create([
+            'name' => $validated['name'],
+            //'description' => $validated['description'] ?? null, // 如果字段可空
+        ]);
+
         if (!empty($validated['permissions'])) {
             $role->syncPermissions($validated['permissions']);
         }
@@ -69,15 +73,23 @@ class RoleController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
+    // public function edit(Role $role)
+    // {
+    //     // 获取当前角色的所有权限名称（数组形式）
+    //     $rolePermissions = $role->permissions->pluck('name')->toArray();
+
+    //     return view('roles.edit', [
+    //         'role' => $role,
+    //         'rolePermissions' => $rolePermissions,
+    //     ]);
+    // }
+
+
     public function edit(Role $role)
     {
-        // 获取当前角色的所有权限名称（数组形式）
+        $permissions = Permission::orderBy('group')->get()->groupBy('group');
         $rolePermissions = $role->permissions->pluck('name')->toArray();
-
-        return view('roles.edit', [
-            'role' => $role,
-            'rolePermissions' => $rolePermissions,
-        ]);
+        return view('roles.edit', compact('role', 'permissions', 'rolePermissions'));
     }
 
     /**
@@ -101,14 +113,26 @@ class RoleController extends Controller
      */
     public function destroy(Role $role)
     {
+        // 防止误删超级管理员角色
         if ($role->name === 'admin') {
             return redirect()->back()->with('error', 'Admin role cannot be deleted.');
         }
 
+        // 解除所有用户与此角色绑定
+        $role->users()->detach();
+
+        // 解除角色拥有的所有权限（可选）
+        $role->permissions()->detach();
+
+        // 日志记录（如果你有 log_operation 函数）
+        // log('role.delete', "Deleted role {$role->name} (ID: {$role->id})");
+
+        // 删除角色
         $role->delete();
 
-        return redirect()->route('roles.index')->with('success', 'Role deleted.');
+        return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
     }
+
 
     public function batchDelete(Request $request, Role $role)
     {
@@ -128,9 +152,8 @@ class RoleController extends Controller
     }
 
     public function removeUser(Role $role, User $user)
-{
-    $user->removeRole($role->name);
-    return back()->with('success', '用户已从该角色移除');
-}
-
+    {
+        $user->removeRole($role->name);
+        return back()->with('success', '用户已从该角色移除');
+    }
 }

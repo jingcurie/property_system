@@ -22,44 +22,10 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-        // $query = Property::where('is_active', 1)
-        //     ->with([
-        //         'feature',
-        //         'rentalInfo',
-        //         'media',
-        //         'ownership.owner'
-        //     ]);
-
-        // 筛选
-        // if ($request->filled('keyword')) {
-        //     $kw = $request->keyword;
-        //     $query->where(function ($q) use ($kw) {
-        //         $q->where('property_name', 'like', "%$kw%")
-        //             ->orWhere('address_street', 'like', "%$kw%")
-        //             ->orWhere('address_city', 'like', "%$kw%")
-        //             ->orWhereHas('ownership.owner', function ($sub) use ($kw) {
-        //                 $sub->where('first_name', 'like', "%$kw%")
-        //                     ->orWhere('last_name', 'like', "%$kw%");
-        //             });
-        //     });
-        // }
-
-        // if ($request->filled('city')) {
-        //     $query->where('address_city', 'like', '%' . $request->city . '%');
-        // }
-
-        // if ($request->filled('status')) {
-        //     $query->whereHas('rentalInfo', function ($q) use ($request) {
-        //         $q->where('availability_status', $request->status);
-        //     });
-        // }
-
-        // if ($request->filled('type')) {
-        //     $query->where('property_type', $request->type);
-        // }
-        $query = Property::with(['rentalInfo', 'ownership.owner'])
+        $query = Property::with(['rentalInfo', 'ownership.owner', 'media'])
             ->where('is_active', 1);
 
+        // 关键词搜索
         if ($request->filled('keyword')) {
             $kw = '%' . $request->keyword . '%';
             $query->where(function ($q) use ($kw) {
@@ -69,42 +35,62 @@ class PropertyController extends Controller
             });
         }
 
+        // 筛选条件
         if ($request->filled('filters')) {
             foreach ($request->filters as $filter) {
                 $value = $request->input("filter_values.$filter");
                 match ($filter) {
-                    'rent' => $query->whereHas('rentalInfo', fn($q) => $q->whereBetween('monthly_rent', [$value['min'] ?? 0, $value['max'] ?? 1000000])),
+                    'status' => $query->whereHas(
+                        'rentalInfo',
+                        fn($q) =>
+                        $q->where('availability_status', $value)
+                    ),
+                    'rent' => $query->whereHas(
+                        'rentalInfo',
+                        fn($q) =>
+                        $q->whereBetween('monthly_rent', [$value['min'] ?? 0, $value['max'] ?? 1000000])
+                    ),
                     'city' => $query->where('address_city', 'like', "%{$value}%"),
                     'type' => $query->where('property_type', $value),
-                    'owner_id' => $query->whereHas('ownership', fn($q) => $q->where('owner_id', $value)),
+                    'owner_id' => $query->whereHas(
+                        'ownership',
+                        fn($q)
+                        => $q->where('owner_id', $value)
+                    ),
                     default => null
                 };
             }
         }
 
+        // 所有房东列表（用于筛选菜单）
         $owners = DB::table('activeowners')->get();
-        $properties = $query->paginate(15);
 
-        // 排序处理
+        // 排序
         $sort = $request->input('sort', 'created_at');
         $direction = $request->input('direction', 'desc');
 
-        if (in_array($sort, ['property_name', 'property_type', 'created_at'])) {
-            $query->orderBy($sort, $direction);
-        } elseif ($sort === 'monthly_rent') {
+        // 特殊字段：需要 join 才能排序的字段
+        // 针对关联表字段排序，手动 join
+        if ($sort === 'rentalInfo.monthly_rent') {
             $query->join('rentalinfo', 'properties.property_id', '=', 'rentalinfo.property_id')
                 ->orderBy('rentalinfo.monthly_rent', $direction)
-                ->select('properties.*'); // 保留主表字段
+                ->select('properties.*');
+        } elseif ($sort === 'rentalInfo.availability_status') {
+            $query->join('rentalinfo', 'properties.property_id', '=', 'rentalinfo.property_id')
+                ->orderBy('rentalinfo.availability_status', $direction)
+                ->select('properties.*');
         } else {
-            $query->orderBy('created_at', 'desc');
+            // 默认排序字段
+            $query->orderBy($sort, $direction);
         }
 
-        // $properties = $query->paginate(10)->appends($request->all());
+        // 分页
         $perPage = $request->input('per_page', 10);
         $properties = $query->paginate($perPage)->appends($request->all());
 
-        return view('properties.index', compact('properties'));
+        return view('properties.index', compact('properties', 'owners'));
     }
+
 
     /**
      * 显示创建页面

@@ -1,0 +1,10 @@
+.custom-tooltip .tooltip-inner {
+    max-width: 220px;
+    white-space: normal;
+    text-align: left;
+    background-color: #2a2f45; /* 深色背景更专业 */
+    color: #fff;
+    padding: 6px 10px;
+    font-size: 13px;
+}
+
