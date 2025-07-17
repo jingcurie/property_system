@@ -16,7 +16,7 @@ class File extends Model
         'disk',
         'fileable_type',
         'fileable_id',
-        'tag',
+        'category',
         'description',
         'is_private',
         'uploaded_by',

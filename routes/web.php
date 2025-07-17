@@ -16,6 +16,8 @@ use App\Models\PropertyMedia;
 use App\Http\Controllers\FileController;
 
 use App\Http\Controllers\TestUploadController;
+use App\Http\Controllers\EmailController;
+use App\Http\Controllers\FileManagerController;
 
 // === 公共页面 ===
 Route::get('/', fn() => view('welcome'));
@@ -114,7 +116,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // 租赁申请
-    Route::get('properties/{property}/apply', [RentalApplicationController::class, 'create'])->name('applications.create');
+    Route::get('properties/{id}/apply', [RentalApplicationController::class, 'createFromProperty'])->name('applications.create');
     Route::post('properties/{property}/apply', [RentalApplicationController::class, 'store'])->name('applications.store');
     // Route::get('applications', [RentalApplicationController::class, 'index'])->name('applications.index');
     // Route::patch('applications/{application}/status', [RentalApplicationController::class, 'updateStatus'])->name('applications.updateStatus');
@@ -142,18 +144,30 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::prefix('files')->name('files.')->group(function () {
-        Route::post('/upload', [FileController::class, 'upload'])->name('upload');
-        Route::get('/{id}/download', [FileController::class, 'download'])->name('download');
-        Route::get('/{id}/preview', [FileController::class, 'preview'])->name('preview');
-        Route::delete('/{id}', [FileController::class, 'destroy'])->name('destroy');
-        Route::post('/{id}/note', [FileController::class, 'updateNote'])->name('updateNote');
-        Route::post('/{id}/cover', [FileController::class, 'markAsCover'])->name('markAsCover');
-        Route::post('/reorder', [FileController::class, 'reorder'])->name('reorder');
-        Route::get('/', [FileController::class, 'index'])->name('index');
+        Route::post('upload', [FileController::class, 'upload'])->name('upload');
+        Route::post('save', [FileController::class, 'store']);
+        Route::post('{file}/update-note', [FileController::class, 'updateNote'])->name('updateNote');
+        Route::post('{file}/mark-cover', [FileController::class, 'markAsCover'])->name('markCover');
+        Route::delete('{file}', [FileController::class, 'destroy'])->name('destroy');
+        Route::get('{file}/preview', [FileController::class, 'preview'])->name('preview');
+        Route::get('{file}/download', [FileController::class, 'download'])->name('download');
     });
 
+    //dashboard search
+    Route::get('/search', [SearchController::class, 'index'])->name('search');
 
-Route::view('/test-upload', 'test-upload')->name('test-upload');
-Route::post('/test-upload', [TestUploadController::class, 'store'])->name('test-upload.store');
+    //email
+    Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');
 
+    //files
+    Route::get('/file-center', [FileManagerController::class, 'index'])->name('file-center.index');
+    Route::get('/files/{file}/preview', [FileManagerController::class, 'preview'])->name('files.preview');
+    Route::get('/files/{file}/download', [FileManagerController::class, 'download'])->name('files.download');
+    Route::delete('/files/{file}', [FileManagerController::class, 'destroy'])->name('files.destroy');
+    Route::post('/files/batch-delete', [FileManagerController::class, 'batchDelete'])->name('files.batchDelete');
+
+    // 可选：Email 路由（如果你启用了“Email”操作）
+    Route::post('/files/{file}/email', [EmailController::class, 'send'])->name('files.email');
+
+    Route::get('/test-pdf', fn() => view('preview-pdf'));
 });

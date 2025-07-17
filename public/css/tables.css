@@ -57,6 +57,11 @@
   background-color: #f8f9fa;
 }
 
+#attachments-table td,
+    #attachments-table th {
+        vertical-align: middle !important;
+    }
+
 .property-img {
   width: 64px;
   height: 64px;

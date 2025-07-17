@@ -23,7 +23,7 @@ class PropertyController extends Controller
     public function index(Request $request)
     {
         $query = Property::with(['rentalInfo', 'ownership.owner', 'media'])
-            ->where('is_active', 1);
+            ->whereNull('deleted_at');
 
         // 关键词搜索
         if ($request->filled('keyword')) {
@@ -449,7 +449,6 @@ class PropertyController extends Controller
     {
         $property = Property::findOrFail($propertyId);
         $property->update([
-            'is_active' => 0,
             'deleted_at' => now(),
             'deleted_by' => Auth::id(),
         ]);
@@ -461,7 +460,7 @@ class PropertyController extends Controller
     {
         $filename = 'properties_export_' . now()->format('Ymd_His') . '.csv';
 
-        $query = Property::where('is_active', 1)
+        $query = Property::whereNull('deleted_at')
             ->with(['feature', 'rentalInfo', 'ownership.owner']);
 
         // 同样的筛选逻辑（可抽出复用）
@@ -536,7 +535,6 @@ class PropertyController extends Controller
         }
 
         $count = Property::whereIn('property_id', $ids)->update([
-            'is_active' => 0,
             'deleted_at' => now(),
             'deleted_by' => Auth::id(),
         ]);

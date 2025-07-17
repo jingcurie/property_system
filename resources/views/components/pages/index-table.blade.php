@@ -2,9 +2,9 @@
 <div class="container-fluid px-0">
     <!-- 顶部标题栏 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2 class="fw-bold text-dark">
+        <h4 class="fw-bold text-dark">
             <i class="{{ $pageIcon ?? 'bi bi-list' }}"></i> {{ $pageTitle ?? '列表页面' }}
-        </h2>
+        </h4>
 
         <!-- 操作栏 -->
         <div class="d-flex gap-2">

@@ -41,8 +41,16 @@ class RentalApplicationController extends Controller
 
     public function create()
     {
-        $properties = Property::where('is_active', 1)->get(); // 仅列出有效房源
+        $properties = Property::whereNull('deleted_at')->get(); // 仅列出有效房源
         return view('rental_applications.create', compact('properties'));
+    }
+
+    public function createFromProperty($id)
+    {
+        $property = Property::findOrFail($id); // ✅ 正确：赋值给 $property
+        $properties = Property::whereNull('deleted_at')->get(); 
+
+        return view('rental_applications.create', compact('property', 'properties'));
     }
 
     public function store(Request $request)
@@ -90,7 +98,7 @@ class RentalApplicationController extends Controller
             'attachments' => 'nullable|string',
         ]);
 
-        DB::transaction(function () use ($data) {
+        $application = DB::transaction(function () use ($data) {
             // 1. 创建 RentalApplication 主表
             $application = RentalApplication::create([
                 'property_id' => $data['property_id'],
@@ -130,7 +138,7 @@ class RentalApplicationController extends Controller
                         'mime_type'       => $file['mime_type'] ?? null,
                         'size'            => $file['size'] ?? null,
                         'disk'            => $file['disk'] ?? 'public',
-                        'tag'             => $file['category'] ?? null,
+                        'category'             => $file['category'] ?? null,
                         'description'     => $file['description'] ?? null,
                         'is_cover'        => $file['is_cover'] ?? false,
                         'is_private'      => $file['is_private'] ?? false,
@@ -139,9 +147,11 @@ class RentalApplicationController extends Controller
                     ]);
                 }
             }
+            return $application;
         });
 
-        return redirect()->route('rental_applications.index')->with('success', 'Application submitted successfully.');
+        // return redirect()->route('rental_applications.index')->with('success', 'Application created successfully.');
+        return redirect()->route('rental_applications.show',$application)->with('success', 'Application created successfully.');
     }
 
 
@@ -234,7 +244,7 @@ class RentalApplicationController extends Controller
                         $existingFiles[$file['id']]->update([
                             'title' => $file['title'] ?? null,
                             'description' => $file['description'] ?? null,
-                            'tag' => $file['category'] ?? null,
+                            'category' => $file['category'] ?? null,
                             'is_cover' => $file['is_cover'] ?? false,
                             'is_private' => $file['is_private'] ?? false,
                             'sort_order' => $index + 1,
@@ -275,7 +285,7 @@ class RentalApplicationController extends Controller
                             'disk' => $file['disk'] ?? 'public',
                             'fileable_type' => RentalApplication::class,
                             'fileable_id' => $rentalApplication->id,
-                            'tag' => $file['category'] ?? null,
+                            'category' => $file['category'] ?? null,
                             'description' => $file['description'] ?? null,
                             'is_cover' => $file['is_cover'] ?? false,
                             'is_private' => $file['is_private'] ?? false,
@@ -293,7 +303,8 @@ class RentalApplicationController extends Controller
             }
         });
 
-        return redirect()->route('rental_applications.index')->with('success', 'Application updated successfully.');
+        // return redirect()->route('rental_applications.index')->with('success', 'Application updated successfully.');
+        return redirect()->route('rental_applications.show', ['rental_application' => $rentalApplication->id])->with('success', 'Application updated successfully.');
     }
 
 
@@ -303,10 +314,51 @@ class RentalApplicationController extends Controller
         $rentalApplication->load([
             'applicants.employmentDetail',
             'consent',
-            'reviewer' // optional: 用户模型的 reviewed_by 外键关联
+            'reviewer', // optional: 用户模型的 reviewed_by 外键关联
+            'files',
+            'files.uploader',
         ]);
 
-        return view('rental_applications.show', compact('rentalApplication'));
+        // $attachmentsJson = $rentalApplication->files->map(function ($f) {
+        //     return [
+        //         'id' => $f->id,
+        //         'title' => $f->title,
+        //         'filename' => $f->filename,
+        //         'path' => $f->path,
+        //         'category' => $f->tag ?? 'uncategorized',
+        //         'description' => $f->description,
+        //         'is_cover' => $f->is_cover,
+        //         'mime_type' => $f->mime_type,
+        //         'size' => $f->size,
+        //         'disk' => $f->disk,
+        //         'fileable_type' => $f->fileable_type,
+        //         'fileable_id' => $f->fileable_id,
+        //         'uploaded_by' => $f->uploaded_by,
+        //         'created_at' => $f->created_at->toDateTimeString(),
+        //     ];
+        // });
+
+        $attachments = $rentalApplication->files->map(function ($file) {
+            return [
+                'id' => $file->id,
+                'title' => $file->title,
+                'filename' => $file->filename,
+                'path' => $file->path,
+                'mime_type' => $file->mime_type,
+                'size' => $file->size,
+                'disk' => $file->disk,
+                'category' => $file->category,
+                'description' => $file->description,
+                'is_cover' => $file->is_cover,
+                'is_private' => $file->is_private,
+                'sort_order' => $file->sort_order,
+                'fileable_type' => $file->fileable_type,
+                'created_at' => optional($file->created_at)->toDateTimeString(),
+                'uploaded_by' => $file->uploader->name ?? 'Unknown',
+            ];
+        });
+
+        return view('rental_applications.show', compact('rentalApplication', 'attachments'));
     }
 
     public function edit(RentalApplication $rentalApplication)
@@ -323,7 +375,7 @@ class RentalApplicationController extends Controller
                 'mime_type' => $file->mime_type,
                 'size' => $file->size,
                 'disk' => $file->disk,
-                'category' => $file->tag,
+                'category' => $file->category,
                 'description' => $file->description,
                 'is_cover' => $file->is_cover,
                 'is_private' => $file->is_private,

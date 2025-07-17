@@ -1,0 +1,72 @@
+/* 整体卡片 */
+.role-card {
+  border-radius: 2rem !important;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+  border-bottom: 5px solid #1f2937 !important;
+}
+
+.role-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* Header 渐变 + 圆角 */
+.role-card > .card-header {
+  /* border-top-left-radius: 1.5rem !important;
+    border-top-right-radius: 1.5rem !important; */
+  /* background: linear-gradient(135deg, #3b82f6, #6366f1); */
+  padding: 0.5rem 1.25rem !important;
+  padding-bottom: 0.5rem !important;
+  background: transparent !important;
+}
+
+.role-card h5 {
+  /* padding-left:0.5rem !important; */
+  margin: 0.5rem 0 !important;
+  padding: 0.2rem 1rem;
+  color: black;
+  /* background-color: rgb(32, 87, 238); */
+  /* border-radius: 30px; */
+  border-left: 10px solid rgb(32, 87, 238);
+}
+
+/* 三点按钮 */
+.role-action-btn {
+  background-color: transparent;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.role-action-btn i {
+  color: rgb(4, 4, 4);
+  font-size: 1.2rem;
+}
+
+.role-action-btn:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+  cursor: pointer;
+}
+
+/* 权限项美化 */
+.role-card .card-body ul li {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #1f2937;
+  /* 深蓝灰文字 */
+}
+
+/* 字体统一 */
+.role-card h5 {
+  font-weight: 600;
+  font-size: 1.1rem;
+}

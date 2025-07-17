@@ -1,16 +1,16 @@
 <style>
     .select2-container--default .select2-selection--single {
-    height: 48px; /* Bootstrap 默认 input 高度 */
-    /* padding: 0.5rem 0.75rem; */
-    /* border: 1px solid #ced4da; */
-    /* border-radius: 0.375rem; */
-    /* line-height: 2; */
-}
+        height: 48px;
+        /* Bootstrap 默认 input 高度 */
+        /* padding: 0.5rem 0.75rem; */
+        /* border: 1px solid #ced4da; */
+        /* border-radius: 0.375rem; */
+        /* line-height: 2; */
+    }
 
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    /* line-height: 5; */
-}
-
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        /* line-height: 5; */
+    }
 </style>
 
 <form action="{{ $formAction }}" method="POST" enctype="multipart/form-data" id="main-form">
@@ -23,9 +23,18 @@
     <div class="card mb-4">
         <div class="card-header fw-bold">Application Info</div>
         <div class="card-body row g-3">
-            <div class="col-md-6">
-                <label for="property_id" class="form-label">Property <span class="text-danger">*</span></label>
-                {{-- <select name="property_id" id="property_id"
+            @if (isset($property))
+                {{-- 已知房源，自动填入且不可修改 --}}
+                <div class="col-md-6">
+                    <label class="form-label">Property</label>
+                    <input type="text" class="form-control" value="{{ $property->property_name }}" disabled>
+                    <input type="hidden" name="property_id" value="{{ $property->property_id }}">
+                </div>
+            @else
+                {{-- 未知房源，显示下拉选择 --}}
+                <div class="col-md-6">
+                    <label for="property_id" class="form-label">Property <span class="text-danger">*</span></label>
+                    {{-- <select name="property_id" id="property_id"
                     class="form-select @error('property_id') is-invalid @enderror" required>
                     @foreach ($properties as $property)
                         <option value="{{ $property->property_id }}"
@@ -34,27 +43,30 @@
                         </option>
                     @endforeach
                 </select> --}}
-                <select id="my-select" name="property_id" class="form-select  @error('property_id') is-invalid @enderror"
-                    required>
-                    @php
-                        $selectedId = old('property_id', $application->property_id ?? '');
-                    @endphp
 
-                    @if (!$selectedId)
-                        <option value="">请选择房源</option> {{-- ✅ 仅在没有默认值时显示 placeholder --}}
-                    @endif
+                    <select id="my-select" name="property_id"
+                        class="form-select  @error('property_id') is-invalid @enderror" required>
+                        @php
+                            $selectedId = old('property_id', $application->property_id ?? '');
+                        @endphp
 
-                    @foreach ($properties as $property)
-                        <option value="{{ $property->property_id }}"
-                            {{ $selectedId == $property->property_id ? 'selected' : '' }}>
-                            {{ $property->property_name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('property_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+                        @if (!$selectedId)
+                            <option value="">请选择房源</option> {{-- ✅ 仅在没有默认值时显示 placeholder --}}
+                        @endif
+
+                        @foreach ($properties as $property)
+                            <option value="{{ $property->property_id }}"
+                                {{ $selectedId == $property->property_id ? 'selected' : '' }}>
+                                {{ $property->property_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('property_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                </div>
+            @endif
+
             <div class="col-md-6">
                 <label for="application_code" class="form-label">Application Code <span
                         class="text-danger">*</span></label>
@@ -265,26 +277,16 @@
         value="{{ old('fingerprint') ?? \Illuminate\Support\Str::uuid() }}">
 
     {{-- {{  dd($attachmentsJson);}} --}}
-    <input type="text" id="attachments" name="attachments" value='@json(old("attachments", $attachmentsJson ?? "[]"))'>
+    {{-- <input type="text" id="attachments" name="attachments" value='@json(old("attachments", $attachmentsJson ?? "[]"))'> --}}
 
+    <div class="text-end d-flex justify-content-between align-items-center">
+        <a href="{{ route('rental_applications.index') }}" class="btn btn-outline-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary" onclick="submitMainForm()">
+            {{ $isEdit ? 'Update Application' : 'Submit Application' }}
+        </button>
+    </div>
 
 </form>
-
-{{-- 上传文件模块 --}}
-@include('components.files.upload', [
-    'files' => $application?->files ?? [],
-    'fileable_type' => $application ? get_class($application) : App\Models\RentalApplication::class,
-    'fileable_id' => $application?->id ?? 0,
-])
-
-<div class="text-end d-flex justify-content-between align-items-center">
-    <a href="{{ route('rental_applications.index') }}" class="btn btn-outline-secondary">Cancel</a>
-    <button type="submit" class="btn btn-primary" onclick="submitMainForm()">
-        {{ $isEdit ? 'Update Application' : 'Submit Application' }}
-    </button>
-</div>
-
-
 
 <!-- 引入 Select2 -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
