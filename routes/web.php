@@ -12,12 +12,17 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RentalApplicationController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\ApplicantController;
 use App\Models\PropertyMedia;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\LeaseController;
 
 use App\Http\Controllers\TestUploadController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FileManagerController;
+use App\Http\Controllers\NotificationController;
+use App\Models\Notification;
+
 
 // === 公共页面 ===
 Route::get('/', fn() => view('welcome'));
@@ -27,50 +32,24 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-// 语言切换路由
 Route::get('/lang/{locale}', function ($locale) {
-    // 只允许中英文切换
-    if (!in_array($locale, ['en', 'zh'])) {
+    // 语言代码映射
+    $localeMap = [
+        'en' => 'en',
+        'zh' => 'zh',
+        'zh-CN' => 'zh',  // 支持标准格式
+    ];
+
+    if (!array_key_exists($locale, $localeMap)) {
         abort(400);
     }
 
-    // 保存语言到 Session
-    session(['locale' => $locale]);
-    app()->setLocale($locale);
+    $actualLocale = $localeMap[$locale];
+    session(['locale' => $actualLocale]);
+    app()->setLocale($actualLocale);
 
-    // 调试输出
-    // dd([
-    //     '语言：{{ app()->getLocale() }}' => app()->getLocale(),
-    //     'selected_locale' => $locale,
-    //     'session_locale' => session('locale'),
-    //     'current_app_locale' => app()->getLocale()
-    // ]);
-
-    // 切换语言后跳转回原页面
     return redirect()->back();
 })->name('lang.switch');
-
-// Route::get('/session-debug', function() {
-//     return response()->json([
-//         'session_id' => session()->getId(),
-//         'session_data' => session()->all(),
-//         'app_locale' => app()->getLocale(),
-//         'storage_path' => storage_path('framework/sessions'),
-//         'session_files' => glob(storage_path('framework/sessions/*'))
-//     ]);
-// });
-
-// Route::get('/lang/{locale}', function ($locale) {
-//     if (!in_array($locale, ['en', 'zh'])) {
-//         abort(400);
-//     }
-//     session(['locale' => $locale]);
-//     app()->setLocale($locale);
-//     \Illuminate\Support\Facades\Config::set('app.locale', $locale);
-//     return redirect()->back();
-// });
-
-// Route::view('/lang-test', 'lang-test');
 
 // === 登录后才能访问的路由 ===
 Route::middleware(['auth'])->group(function () {
@@ -135,13 +114,15 @@ Route::middleware(['auth'])->group(function () {
     // 动态筛选字段
     Route::get('/filters/field', function (Request $request) {
         $filter = $request->query('filter');
-        $module = $request->query('module');
-        if (!in_array($module, ['properties', 'users', 'roles', 'permissions', 'rental_applications'])) {
-            abort(403, '非法访问');
-        }
-        $viewPath = $module . '.partials.filter_fields';
-        return view($viewPath, ['filter' => $filter, 'value' => null]);
+        $filters = json_decode(urldecode($request->query('filters')), true); // 解码 JSON
+
+        return view("components.filters.filter_fields", [
+            'filter' => $filter,
+            'value' => null,
+            'filterFields' => $filters
+        ]);
     });
+
 
     Route::prefix('files')->name('files.')->group(function () {
         Route::post('upload', [FileController::class, 'upload'])->name('upload');
@@ -170,4 +151,23 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/files/{file}/email', [EmailController::class, 'send'])->name('files.email');
 
     Route::get('/test-pdf', fn() => view('preview-pdf'));
+
+    //leases
+    Route::resource('leases', LeaseController::class);
+
+
+    //applicants
+    Route::resource('applicants', ApplicantController::class);
+
+    //notification
+
+    // Route::get('/notifications/unread-count', function (Request $request) {
+    //     $count = Notification::where('user_id', $request->user()->id)
+    //                         ->where('is_read', false)
+    //                         ->count();
+    //     return response()->json(['count' => $count]);
+    // });
+
+    Route::post('/notifications/generate', [NotificationController::class, 'generate']);
+    Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
 });

@@ -2,9 +2,14 @@
 <div class="container-fluid px-0">
     <!-- 顶部标题栏 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold text-dark">
-            <i class="{{ $pageIcon ?? 'bi bi-list' }}"></i> {{ $pageTitle ?? '列表页面' }}
-        </h4>
+       <div class="d-flex align-items-center">
+            <div class="icon-wrapper me-3">
+                <i class="{{ $pageIcon ?? 'bi bi-list' }} text-primary fs-4"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold text-dark mb-0">{{ $pageTitle ?? 'list' }}</h4>
+            </div>
+        </div>
 
         <!-- 操作栏 -->
         <div class="d-flex gap-2">
@@ -35,23 +40,30 @@
         </div>
     </div>
 
+    {{-- {{ dd($partialsForfilter) }} --}}
+
     <div class="card shadow-sm">
         <!-- 搜索栏 -->
         <form method="GET" action="{{ $searchAction ?? request()->url() }}" id="filter-form" class="mb-3">
-            <div class="card-header border-0 bg-transparent py-2 px-0 d-flex flex-wrap gap-2 align-items-center">
+            <div class="card-header bg-light border-0 bg-transparent py-2 px-0 d-flex flex-wrap gap-2 align-items-center">
                 @if (!empty($searchKeywordFields))
-                    <div>
-                        <input type="text" name="keyword" value="{{ request('keyword') }}" class="form-control"
-                            placeholder="搜索{{ implode('、', $searchKeywordFields) }}..." size="80">
+                    <div class="input-group border rounded" style="max-width: 300px;">
+                        <span class="input-group-text bg-white border-0 rounded-start">
+                            <i class="bi bi-search text-secondary"></i>
+                        </span>
+                        <input type="text" name="keyword" value="{{ request('keyword') }}"
+                            class="form-control border-0 shadow-none rounded-end"
+                            placeholder="搜索{{ implode('、', $searchKeywordFields) }}...">
                     </div>
                 @endif
 
                 <!-- 筛选字段容器（可选） -->
                 @if (!empty($filterFields))
                     <div class="dropdown">
+                        <input type="hidden" name="filterFields" value="{{ json_encode($filterFields) }}">
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button"
                             data-bs-toggle="dropdown">
-                            <i class="bi bi-funnel me-1"></i> 添加筛选字段
+                            <i class="bi bi-funnel me-1"></i> 添加筛选
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             @foreach ($filterFields as $filter)
@@ -65,6 +77,7 @@
                                     </div>
                                 </li>
                             @endforeach
+
                         </ul>
                     </div>
                 @endif
@@ -162,7 +175,7 @@
 
                     <tbody>
                         @forelse ($records as $item)
-                            <tr>
+                            <tr class="table-row-hover">
                                 <!-- 勾选框 -->
                                 <td>
                                     <input type="checkbox" name="selected_ids[]"
@@ -241,7 +254,7 @@
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
 
-                                            <ul class="dropdown-menu dropdown-menu-end">
+                                            <ul class="dropdown-menu dropdown-menu-end border-0">
                                                 @php
                                                     $groupedActions = collect($actions)
                                                         ->groupBy(fn($a) => $a['group'] ?? 'default')
@@ -412,6 +425,7 @@
         }
 
         function syncFilterState(option) {
+            const filterFields = @json($filterFields);
             const row = document.getElementById('filter-row');
             const existing = document.querySelector(`[data-filter="${option}"]`);
             if (existing) {
@@ -421,7 +435,7 @@
                 setTimeout(syncFilterVisibility, 0);
             } else {
                 const moduleName = @json($module); // 安全地将 Blade 变量输出为 JS 字符串
-                fetch(`/filters/field?filter=${option}&module=${moduleName}`)
+                fetch(`/filters/field?filter=${option}&filters=${encodeURIComponent(JSON.stringify(filterFields))}`)
                     .then(res => res.text())
                     .then(html => {
                         const wrapper = document.createElement('div');

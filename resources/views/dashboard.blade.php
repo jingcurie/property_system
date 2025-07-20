@@ -70,7 +70,7 @@
                     </div>
                 </div>
             </div>
-            <div class="col-xl-4">
+            {{-- <div class="col-xl-4">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0 pb-0">
                         <h5 class="card-title mb-0">Property Status Distribution</h5>
@@ -102,7 +102,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> --}}
         </div>
 
         {{-- Enhanced Data Tables --}}

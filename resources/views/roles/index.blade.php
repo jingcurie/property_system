@@ -24,7 +24,15 @@
 
 @section('content')
     <div class="container-fluid px-0">
-        <h4 class="mb-4 fw-bold"><i class="bi bi-person-fill-gear"></i> Roles List</h4>
+        <div class="d-flex align-items-center mb-4">
+            <div class="icon-wrapper me-3">
+                <i class="bi bi-person-fill-gear text-primary fs-4"></i>
+            </div>
+            <div>
+                <h4 class="fw-bold text-dark mb-0">Roles List</h4>
+            </div>
+        </div>
+        {{-- <h4 class="mb-4 fw-bold"><i class="bi bi-person-fill-gear"></i> Roles List</h4> --}}
         <div class="row g-4">
             @foreach ($roles as $role)
                 <div class="col-md-6 col-lg-4">

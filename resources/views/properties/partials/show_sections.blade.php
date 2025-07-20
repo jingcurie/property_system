@@ -129,7 +129,7 @@ use Illuminate\Support\Str;
 </div>
 
 <!-- 财务信息 -->
-<div class="card mb-4">
+{{-- <div class="card mb-4">
   <div class="card-header fw-bold">财务信息</div>
   <div class="card-body row g-3">
     <div class="col-md-3">管理费比例：{{ $financial->management_fee_percentage }}%</div>
@@ -137,7 +137,7 @@ use Illuminate\Support\Str;
     <div class="col-md-3">维修基金：${{ number_format($financial->maintenance_fund, 2) }}</div>
     <div class="col-md-3">已含HST：<span class="badge bg-{{ $financial->hst_included ? 'success' : 'secondary' }}">{{ $financial->hst_included ? '是' : '否' }}</span></div>
   </div>
-</div>
+</div> --}}
 
 <!-- 合规信息 -->
 <div class="card mb-4">

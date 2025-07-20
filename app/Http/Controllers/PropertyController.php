@@ -37,30 +37,60 @@ class PropertyController extends Controller
 
         // 筛选条件
         if ($request->filled('filters')) {
-            foreach ($request->filters as $filter) {
-                $value = $request->input("filter_values.$filter");
-                match ($filter) {
-                    'status' => $query->whereHas(
-                        'rentalInfo',
-                        fn($q) =>
-                        $q->where('availability_status', $value)
-                    ),
-                    'rent' => $query->whereHas(
-                        'rentalInfo',
-                        fn($q) =>
-                        $q->whereBetween('monthly_rent', [$value['min'] ?? 0, $value['max'] ?? 1000000])
-                    ),
-                    'city' => $query->where('address_city', 'like', "%{$value}%"),
-                    'type' => $query->where('property_type', $value),
-                    'owner_id' => $query->whereHas(
-                        'ownership',
-                        fn($q)
-                        => $q->where('owner_id', $value)
-                    ),
-                    default => null
-                };
+            $filters = $request->input('filters', []);
+            $filterFields = json_decode($request->input('filterFields'), true) ?? [];
+
+            foreach ($filters as $id => $filterKey) {
+                // 找到对应字段定义
+                $fieldDef = collect($filterFields)->firstWhere('key', $filterKey);
+
+                $value = $request->input("filter_values.$filterKey");
+                //dd($value);
+
+                // 跳过无定义字段或空值
+                if (!$fieldDef || $value === null || $value === '') continue;
+
+                $type = $fieldDef['type'] ?? 'text';
+                $column = $fieldDef['column'] ?? $filterKey;
+                $relation = $fieldDef['relation'] ?? null;
+
+                switch ($type) {
+                    case 'select':
+                        if ($relation) {
+                            $query->whereHas($relation, fn($q) => $q->where($column, $value));
+                        } else {
+                            $query->where($column, $value);
+                        }
+                        break;
+
+                    case 'range':
+                        $min = $value['min'] ?? null;
+                        $max = $value['max'] ?? null;
+                        if ($min !== null && $max !== null) {
+                            $query = $relation
+                                ? $query->whereHas($relation, fn($q) => $q->whereBetween($column, [$min, $max]))
+                                : $query->whereBetween($column, [$min, $max]);
+                        } elseif ($min !== null) {
+                            $query = $relation
+                                ? $query->whereHas($relation, fn($q) => $q->where($column, '>=', $min))
+                                : $query->where($column, '>=', $min);
+                        } elseif ($max !== null) {
+                            $query = $relation
+                                ? $query->whereHas($relation, fn($q) => $q->where($column, '<=', $max))
+                                : $query->where($column, '<=', $max);
+                        }
+                        break;
+
+                    case 'text':
+                    default:
+                        $query = $relation
+                            ? $query->whereHas($relation, fn($q) => $q->where($column, 'like', "%$value%"))
+                            : $query->where($column, 'like', "%$value%");
+                        break;
+                }
             }
         }
+
 
         // 所有房东列表（用于筛选菜单）
         $owners = DB::table('activeowners')->get();
@@ -521,7 +551,7 @@ class PropertyController extends Controller
 
     public function show($id)
     {
-        $property = Property::with(['feature', 'media', 'rentalInfo', 'ownership.owner'])->findOrFail($id);
+        $property = Property::with(['feature', 'media', 'rentalInfo', 'ownership.owner', 'FinancialInfo'])->findOrFail($id);
 
         return view('properties.show', compact('property'));
     }

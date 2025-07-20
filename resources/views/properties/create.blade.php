@@ -2,10 +2,11 @@
 
 @section('content')
 <div class="container">
-    <h1 class="mb-4">新增房源</h1>
+    <h1 class="mb-4">{{ __('property.create_title') }}</h1>
 
     @if ($errors->any())
         <div class="alert alert-danger">
+            <strong>{{ __('property.validation_errors') }}</strong>
             <ul class="mb-0">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>

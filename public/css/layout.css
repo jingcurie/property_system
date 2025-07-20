@@ -54,8 +54,8 @@ body {
   border-radius: 6px;
 }
 
-.select2-container--default .select2-selection--single {
-  height: 38px; /* Bootstrap 默认 input 高度 */
+/* .select2-container--default .select2-selection--single {
+  height: 38px; 
   padding: 0.375rem 0.75rem;
   border: 1px solid #ced4da;
   border-radius: 0.375rem;
@@ -66,4 +66,4 @@ body {
   .select2-selection--single
   .select2-selection__rendered {
   line-height: 2.4;
-}
+} */

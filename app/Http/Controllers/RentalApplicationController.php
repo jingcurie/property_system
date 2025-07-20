@@ -20,6 +20,8 @@ class RentalApplicationController extends Controller
         $keyword = $request->input('keyword');
         $filterStatus = $request->input('filter_values.status');
 
+        
+
         $sortField = $request->input('sort', 'submitted_at'); // 默认按提交时间
         $direction = $request->input('direction', 'desc');    // 默认倒序
 
