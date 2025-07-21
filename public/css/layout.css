@@ -67,3 +67,23 @@ body {
   .select2-selection__rendered {
   line-height: 2.4;
 } */
+
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    height: 60px;
+    /* background: rgba(0, 0, 0, 0.2);  */
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.carousel-control-prev {
+    left: 5%;
+}
+
+.carousel-control-next {
+    right: 5%;
+}

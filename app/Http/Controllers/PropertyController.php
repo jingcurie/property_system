@@ -9,6 +9,7 @@ use App\Models\Property;
 use App\Models\PropertyFeature;
 use App\Models\PropertyMedia;
 use App\Models\RentalInfo;
+use App\Models\Owner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -553,7 +554,9 @@ class PropertyController extends Controller
     {
         $property = Property::with(['feature', 'media', 'rentalInfo', 'ownership.owner', 'FinancialInfo'])->findOrFail($id);
 
-        return view('properties.show', compact('property'));
+        $allOwners = Owner::whereNull('deleted_at')->get();
+
+        return view('properties.show', compact('property', 'allOwners'));
     }
 
     public function batchDelete(Request $request)
@@ -570,5 +573,24 @@ class PropertyController extends Controller
         ]);
 
         return redirect()->route('properties.index')->with('success', "成功删除 {$count} 个房源");
+    }
+
+    // PropertyController.php
+    public function addOwner(Request $request, Property $property)
+    {
+        $validated = $request->validate([
+            'owner_id' => 'required|exists:owners,owner_id',
+            'ownership_percentage' => 'required|numeric|min:0|max:100',
+            'start_date' => 'nullable|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+        ]);
+
+        $property->owners()->attach($validated['owner_id'], [
+            'ownership_percentage' => $validated['ownership_percentage'],
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+        ]);
+
+        return redirect()->back()->with('success', '房东已成功关联。');
     }
 }

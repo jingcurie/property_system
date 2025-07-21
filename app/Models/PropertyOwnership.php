@@ -25,6 +25,7 @@ class PropertyOwnership extends Model
 
     public function owner()
     {
-        return $this->belongsTo(\App\Models\Owner::class, 'owner_id', 'owner_id');
+       return $this->belongsTo(\App\Models\Owner::class, 'owner_id', 'owner_id')
+                ->whereNull('deleted_at');
     }
 }

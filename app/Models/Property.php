@@ -76,21 +76,30 @@ class Property extends Model
         return $this->hasMany(Marketing::class, 'property_id', 'property_id');
     }
 
-    // public function ownerships()
-    // {
-    //     return $this->hasMany(PropertyOwnership::class, 'property_id', 'property_id');
-    // }
+    public function files()
+    {
+        return $this->morphMany(File::class, 'fileable');
+    }
+
+    public function owners()
+    {
+        return $this->belongsToMany(Owner::class, 'PropertyOwnership', 'property_id', 'owner_id')
+            ->withPivot('ownership_percentage', 'start_date', 'end_date')
+            ->withTimestamps()
+            ->whereNull('owners.deleted_at');
+            
+    }
+
+    // 所有关联记录（用于管理 ownership）
+    public function ownerships()
+    {
+        return $this->hasMany(PropertyOwnership::class, 'property_id', 'property_id');
+    }
 
     public function ownership()
     {
-        return $this->hasOne(PropertyOwnership::class, 'property_id', 'property_id');
+        return $this->hasMany(PropertyOwnership::class, 'property_id');
     }
 
-    // app/Models/RentalApplication.php
-
-public function files()
-{
-    return $this->morphMany(File::class, 'fileable');
-}
-
+    
 }

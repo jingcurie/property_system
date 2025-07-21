@@ -30,6 +30,7 @@
     <link href="{{ asset('css/checkbox.css') }}" rel="stylesheet">
     <link href="{{ asset('css/tooltip.css') }}" rel="stylesheet">
     <link href="{{ asset('css/roleCard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/ownerInfoCard.css') }}" rel="stylesheet">
     @stack('styles')
 </head>
 
@@ -437,12 +438,6 @@
             <footer class="text-center text-muted py-4 border-top">
                 &copy; {{ date('Y') }} {{ __('layout.footer_text') }}
             </footer>
-
-            <a href="#" class="nav-link position-relative">
-                <i class="bi bi-bell"></i>
-                <span id="notif-badge"
-                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">0</span>
-            </a>
         </div>
     </div>
 
@@ -849,7 +844,7 @@
 
         //初始执行一次，并每 30 秒刷新一次
         fetchNotifications();
-        setInterval(fetchNotifications, 300);
+        setInterval(fetchNotifications, 30000);
     </script>
 
     @stack('scripts')

@@ -15,6 +15,8 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\ApplicantController;
 use App\Models\PropertyMedia;
 use App\Http\Controllers\FileController;
+use App\Http\Controllers\PropertyOwnershipController;
+use App\Http\Controllers\OwnerController;
 use App\Http\Controllers\LeaseController;
 
 use App\Http\Controllers\TestUploadController;
@@ -60,6 +62,14 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('properties', PropertyController::class);
     Route::post('/properties/batch-delete', [PropertyController::class, 'batchDelete'])->name('properties.batchDelete');
     Route::get('/properties/export', [PropertyController::class, 'export'])->name('properties.export');
+    Route::post('/properties/{property}/add-owner', [PropertyController::class, 'addOwner'])->name('properties.addOwner');
+
+    Route::post('properties/{property}/owners', [PropertyOwnershipController::class, 'store'])->name('owners.store');
+    Route::put('/properties/{property}/owners/{owner}', [PropertyOwnershipController::class, 'update']);
+    Route::delete('/properties/{property}/owners/{owner}', [PropertyOwnershipController::class, 'destroy'])->name('owners.softDestroy');
+    Route::resource('owners', OwnerController::class);
+
+
 
     // 用户管理（管理员限定）
     Route::middleware('role:admin')->group(function () {
@@ -135,7 +145,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     //dashboard search
-    Route::get('/search', [SearchController::class, 'index'])->name('search');
+    // Route::get('/search', [SearchController::class, 'index'])->name('search');
 
     //email
     Route::post('/email/send', [EmailController::class, 'send'])->name('email.send');

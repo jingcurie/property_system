@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
     <div class="container-fluid px-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h2 class="fw-bold text-dark">房源详情</h2>

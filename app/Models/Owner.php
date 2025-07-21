@@ -29,12 +29,23 @@ class Owner extends Model
     // 可选：组合全名
     public function getFullNameAttribute()
     {
-        return $this->first_name.' '.$this->last_name;
+        return $this->first_name . ' ' . $this->last_name;
     }
 
-    // 所拥有的房产（如果你以后要用）
     public function properties()
     {
-        return $this->hasManyThrough(Property::class, PropertyOwnership::class, 'owner_id', 'property_id', 'owner_id', 'property_id');
+        return $this->belongsToMany(Property::class, 'property_ownership', 'owner_id', 'property_id')
+            ->withPivot('ownership_percentage', 'start_date', 'end_date')
+            ->withTimestamps();
+    }
+
+    public function ownerships()
+    {
+        return $this->hasMany(PropertyOwnership::class, 'owner_id', 'owner_id');
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', 1);
     }
 }

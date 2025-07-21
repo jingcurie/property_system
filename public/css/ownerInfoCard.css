@@ -1,0 +1,115 @@
+:root {
+  --primary-color: #2563eb;
+  --success-color: #059669;
+  --warning-color: #d97706;
+  --secondary-color: #64748b;
+}
+
+.owner-card {
+  transition: all 0.3s ease;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.owner-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: var(--primary-color);
+}
+
+.owner-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.info-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--secondary-color);
+  margin-right: 12px;
+  flex-shrink: 0;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #374151;
+  min-width: 80px;
+  margin-right: 12px;
+}
+
+.info-value {
+  color: #6b7280;
+  flex: 1;
+}
+
+.ownership-section {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.percentage-badge {
+  background: linear-gradient(135deg, var(--success-color), #10b981);
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.action-buttons {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.card-header-custom {
+  background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+  border-bottom: 2px solid var(--primary-color);
+  padding: 20px;
+}
+
+.owner-count-badge {
+  background: var(--primary-color);
+  color: white;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--secondary-color);
+}
+
+.empty-state i {
+  font-size: 64px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
