@@ -23,103 +23,15 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Property::with(['rentalInfo', 'ownership.owner', 'media'])
-            ->whereNull('deleted_at');
+        $query = Property::with(['rentalInfo', 'owners', 'media']);
 
-        // 关键词搜索
-        if ($request->filled('keyword')) {
-            $kw = '%' . $request->keyword . '%';
-            $query->where(function ($q) use ($kw) {
-                $q->where('property_name', 'like', $kw)
-                    ->orWhere('address_street', 'like', $kw)
-                    ->orWhere('address_city', 'like', $kw);
-            });
-        }
+        //调用helpers中的functions
+        $query = applyKeywordSearch($query, $request);
+        $query = applyFilters($query, $request);
+        $query = applySorting($query, $request);
+        $properties = applyPagination($query, $request);
 
-        // 筛选条件
-        if ($request->filled('filters')) {
-            $filters = $request->input('filters', []);
-            $filterFields = json_decode($request->input('filterFields'), true) ?? [];
-
-            foreach ($filters as $id => $filterKey) {
-                // 找到对应字段定义
-                $fieldDef = collect($filterFields)->firstWhere('key', $filterKey);
-
-                $value = $request->input("filter_values.$filterKey");
-                //dd($value);
-
-                // 跳过无定义字段或空值
-                if (!$fieldDef || $value === null || $value === '') continue;
-
-                $type = $fieldDef['type'] ?? 'text';
-                $column = $fieldDef['column'] ?? $filterKey;
-                $relation = $fieldDef['relation'] ?? null;
-
-                switch ($type) {
-                    case 'select':
-                        if ($relation) {
-                            $query->whereHas($relation, fn($q) => $q->where($column, $value));
-                        } else {
-                            $query->where($column, $value);
-                        }
-                        break;
-
-                    case 'range':
-                        $min = $value['min'] ?? null;
-                        $max = $value['max'] ?? null;
-                        if ($min !== null && $max !== null) {
-                            $query = $relation
-                                ? $query->whereHas($relation, fn($q) => $q->whereBetween($column, [$min, $max]))
-                                : $query->whereBetween($column, [$min, $max]);
-                        } elseif ($min !== null) {
-                            $query = $relation
-                                ? $query->whereHas($relation, fn($q) => $q->where($column, '>=', $min))
-                                : $query->where($column, '>=', $min);
-                        } elseif ($max !== null) {
-                            $query = $relation
-                                ? $query->whereHas($relation, fn($q) => $q->where($column, '<=', $max))
-                                : $query->where($column, '<=', $max);
-                        }
-                        break;
-
-                    case 'text':
-                    default:
-                        $query = $relation
-                            ? $query->whereHas($relation, fn($q) => $q->where($column, 'like', "%$value%"))
-                            : $query->where($column, 'like', "%$value%");
-                        break;
-                }
-            }
-        }
-
-
-        // 所有房东列表（用于筛选菜单）
-        $owners = DB::table('activeowners')->get();
-
-        // 排序
-        $sort = $request->input('sort', 'created_at');
-        $direction = $request->input('direction', 'desc');
-
-        // 特殊字段：需要 join 才能排序的字段
-        // 针对关联表字段排序，手动 join
-        if ($sort === 'rentalInfo.monthly_rent') {
-            $query->join('rentalinfo', 'properties.property_id', '=', 'rentalinfo.property_id')
-                ->orderBy('rentalinfo.monthly_rent', $direction)
-                ->select('properties.*');
-        } elseif ($sort === 'rentalInfo.availability_status') {
-            $query->join('rentalinfo', 'properties.property_id', '=', 'rentalinfo.property_id')
-                ->orderBy('rentalinfo.availability_status', $direction)
-                ->select('properties.*');
-        } else {
-            // 默认排序字段
-            $query->orderBy($sort, $direction);
-        }
-
-        // 分页
-        $perPage = $request->input('per_page', 10);
-        $properties = $query->paginate($perPage)->appends($request->all());
-
-        return view('properties.index', compact('properties', 'owners'));
+        return view('properties.index', compact('properties'));
     }
 
 
@@ -552,12 +464,73 @@ class PropertyController extends Controller
 
     public function show($id)
     {
-        $property = Property::with(['feature', 'media', 'rentalInfo', 'ownership.owner', 'FinancialInfo'])->findOrFail($id);
+        $property = Property::with([
+            'feature',
+            'media',
+            'rentalInfo',
+            'ownerships.owner',
+            'FinancialInfo',
+            'files',
+            'files.uploader',
+            'leases.tenants',
+        ])->findOrFail($id);
 
         $allOwners = Owner::whereNull('deleted_at')->get();
 
-        return view('properties.show', compact('property', 'allOwners'));
+        $attachments = $property->files->map(function ($file) {
+            return [
+                'id' => $file->id,
+                'title' => $file->title,
+                'filename' => $file->filename,
+                'path' => $file->path,
+                'mime_type' => $file->mime_type,
+                'size' => $file->size,
+                'disk' => $file->disk,
+                'category' => $file->category,
+                'description' => $file->description,
+                'is_cover' => $file->is_cover,
+                'is_private' => $file->is_private,
+                'sort_order' => $file->sort_order,
+                'fileable_type' => $file->fileable_type,
+                'created_at' => optional($file->created_at)->toDateTimeString(),
+                'uploaded_by' => $file->uploader->name ?? 'Unknown',
+            ];
+        });
+
+        $today = now()->toDateString();
+
+        // 获取所有 leases（含租客）
+        $leases = $property->leases->whereNull('deleted_at');
+
+        // 当前有效合同的租客（end_date >= 今天）
+        $activeLeasesTenants = collect();
+        // 已过期合同的租客（end_date < 今天）
+        $expiredLeasesTenants = collect();
+
+        foreach ($leases as $lease) {
+            $leaseTenants = $lease->tenants->whereNull('deleted_at');
+
+            foreach ($leaseTenants as $tenant) {
+                $tenant->setRelation('lease', $lease); // 加入 lease 属性
+                $tenant->setRelation('pivot', $tenant->pivot); // 确保 pivot 仍在
+
+                if ($lease->end_date >= $today) {
+                    $activeLeasesTenants->push($tenant);
+                } else {
+                    $expiredLeasesTenants->push($tenant);
+                }
+            }
+        }
+
+        return view('properties.show', compact(
+            'property',
+            'allOwners',
+            'attachments',
+            'activeLeasesTenants',
+            'expiredLeasesTenants'
+        ));
     }
+
 
     public function batchDelete(Request $request)
     {

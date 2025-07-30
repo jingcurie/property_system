@@ -35,4 +35,14 @@ return [
         ],
     ],
 
+    'docusign' => [
+        'client_id' => env('DOCUSIGN_CLIENT_ID'),
+        'user_id' => env('DOCUSIGN_USER_ID'),
+        'account_id' => env('DOCUSIGN_ACCOUNT_ID'),
+        'keypair_id' => env('DOCUSIGN_KEYPAIR_ID'),
+        'base_url' => env('DOCUSIGN_BASE_URL'),
+        'oauth_base_url' => env('DOCUSIGN_OAUTH_BASE_URL'),
+        'private_key_path' => storage_path('app/docusign/private.key'),
+    ],
+
 ];

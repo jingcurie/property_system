@@ -361,7 +361,7 @@
                 .then(data => {
                     if (data.success) {
                         const savedFiles = data.savedFiles;
-
+                        console.log(savedFiles);
                         const input_attachments = document.getElementById('attachments');
 
                         // 1. 获取旧数据
@@ -381,6 +381,8 @@
 
                         // 3. 写回合并后的结果
                         input_attachments.value = JSON.stringify(merged);
+
+                        console.log( savedFiles);
 
                         // ✅ 渲染文件表格
                         renderSavedFiles(savedFiles);

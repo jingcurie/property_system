@@ -13,7 +13,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\RentalApplicationController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\ApplicantController;
-use App\Models\PropertyMedia;
+
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\PropertyOwnershipController;
 use App\Http\Controllers\OwnerController;
@@ -23,7 +23,14 @@ use App\Http\Controllers\TestUploadController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\DocuSignWebhookController;
+
+use App\Models\PropertyMedia;
 use App\Models\Notification;
+use App\Models\Lease;
+
+use App\Services\DocuSignService;
+
 
 
 // === 公共页面 ===
@@ -53,6 +60,13 @@ Route::get('/lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('lang.switch');
 
+//webhooks route
+Route::post('/webhooks/docusign', [DocuSignWebhookController::class, 'handle']);
+Route::get('/webhooks/test', function () {
+    return response('Test OK', 200);
+});
+
+
 // === 登录后才能访问的路由 ===
 Route::middleware(['auth'])->group(function () {
 
@@ -67,7 +81,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('properties/{property}/owners', [PropertyOwnershipController::class, 'store'])->name('owners.store');
     Route::put('/properties/{property}/owners/{owner}', [PropertyOwnershipController::class, 'update']);
     Route::delete('/properties/{property}/owners/{owner}', [PropertyOwnershipController::class, 'destroy'])->name('owners.softDestroy');
-    Route::resource('owners', OwnerController::class);
+    // Route::resource('owners', OwnerController::class);
 
 
 
@@ -162,8 +176,34 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/test-pdf', fn() => view('preview-pdf'));
 
+    Route::get('/discover-fields', [LeaseController::class, 'discoverFormFields']);
+    Route::get('/generate-lease-pdf/{id}', [LeaseController::class, 'generatePdf']);
+    Route::get('/debug-pdf/{id}', [LeaseController::class, 'debugPdfGeneration']);
+
+    // 验证PDFtk安装
+    Route::get('/check-pdftk', function () {
+        $result = shell_exec('pdftk --version 2>&1');
+        $which = shell_exec('which pdftk 2>&1');
+
+        return response()->json([
+            'pdftk_version' => $result ? trim($result) : 'Not found',
+            'pdftk_path' => $which ? trim($which) : 'Not found',
+            'shell_exec_enabled' => function_exists('shell_exec'),
+        ]);
+    });
+
     //leases
     Route::resource('leases', LeaseController::class);
+    Route::post('/leases/batch-delete', [LeaseController::class, 'batchDelete'])->name('leases.batchDelete');
+    Route::get('/leases/{id}/edit', [LeaseController::class, 'edit'])->name('leases.edit');
+    Route::get('/leases/export', [LeaseController::class, 'export'])->name('leases.export');
+    Route::get('/leases/{id}', [LeaseController::class, 'show'])->name('leases.show');
+    Route::get('/leases/{id}/export-pdf', [LeaseController::class, 'exportPdf'])->name('leases.exportPdf');
+
+
+    Route::get('/leases/{id}/filled-pdf', [LeaseController::class, 'generatePdf'])->name('leases.generatePdf');
+    Route::get('/test-coordinates/{id}', [LeaseController::class, 'testCoordinates']);
+    Route::get('/discover-fields', [LeaseController::class, 'discoverFormFields']);
 
 
     //applicants
@@ -180,4 +220,35 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/notifications/generate', [NotificationController::class, 'generate']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
+
+    //docusign
+    Route::get('/test-docusign', function () {
+        //     $service = new DocuSignService();
+        // $result = $service->testJWTOnly();
+
+        // dd($result);
+
+        try {
+            $docusignService = new DocuSignService();
+            $result = $docusignService->getApiClient();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'DocuSign connection successful!',
+                'timestamp' => now()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ]);
+        }
+    });
+
+    Route::post('/leases/{lease}/send-docusign', [LeaseController::class, 'sendDocusign'])->name('leases.sendDocusign');
+    //webhooks
+
+    //owners
+    Route::resource('owners', OwnerController::class);
+
 });

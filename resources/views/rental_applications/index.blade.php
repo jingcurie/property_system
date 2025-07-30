@@ -7,19 +7,53 @@
         'createUrl' => route('rental_applications.create'),
         'createLabel' => __('application.create_application'),
         'exportUrl' => route('rental_applications.export'),
+        'rowClickUrl' => fn($item) => route('rental_applications.show', $item),
     
-        'searchKeywordFields' => [__('application.search_application_code'), __('application.search_notes')],
+        'searchKeywordFields' => [
+            [
+                'relation' => null,
+                'column' => 'application_code',
+                'label' => __('application.search_application_code'),
+            ],
+            [
+                'relation' => null,
+                'column' => 'notes',
+                'label' => __('application.search_notes'),
+            ],
+            [
+                'relation' => 'property',
+                'column' => 'property_name',
+                'label' => __('application.column_property'),
+            ],
+            [
+                'relation' => 'applicants',
+                'column' => 'full_name',
+                'label' => __('application.column_applicant'),
+            ],
+        ],  
+    
         'filterFields' => [
-            ['key' => 'status', 'label' => __('application.filter_status')],
-            ['key' => 'property_id', 'label' => __('application.filter_property')],
+            [
+                'key' => 'status',
+                'label' => __('application.filter_status'),
+                'type' => 'select',
+                'column' => 'status',
+                'options' => [
+                    'submitted' => __('application.status_submitted'),
+                    'under_review' => __('application.status_under_review'),
+                    'approved' => __('application.status_approved'),
+                    'rejected' => __('application.status_rejected'),
+                ],
+            ],
         ],
+    
         'records' => $rentalApplications,
         'paginator' => $rentalApplications,
     
         'columns' => [
             [
                 'label' => __('application.column_application_code'),
-                'field' => 'application_code',
+                'column' => 'application_code',
                 'sortable' => true,
             ],
     
@@ -41,20 +75,20 @@
             ],
             [
                 'label' => __('application.column_applicant'),
-                'field' => 'applicant.full_name',
+                'column' => 'applicant.full_name',
             ],
             [
                 'label' => __('application.column_lease_term'),
-                'field' => 'employment.min_lease_term',
+                'column' => 'employment.min_lease_term',
             ],
             [
                 'label' => __('application.column_submitted_at'),
-                'field' => 'submitted_at',
+                'column' => 'submitted_at',
                 'sortable' => true,
             ],
             [
                 'label' => __('application.column_reviewer'),
-                'field' => 'reviewer.name',
+                'column' => 'reviewer.name',
             ],
             [
                 'label' => __('application.column_review_notes'),
@@ -67,16 +101,16 @@
     
                     $escapedNote = e($note);
                     return "<i class='bi bi-chat-left-text text-primary'
-                                        data-bs-toggle='tooltip'
-                                        data-bs-placement='top'
-                                        title=\"{$escapedNote}\"
-                                        style='cursor: pointer;'>
-                                    </i>";
+                                                data-bs-toggle='tooltip'
+                                                data-bs-placement='top'
+                                                title=\"{$escapedNote}\"
+                                                style='cursor: pointer;'>
+                                            </i>";
                 },
             ],
             [
                 'label' => __('application.column_status'),
-                'field' => 'status',
+                'column' => 'status',
                 'type' => 'badge',
                 'badge_map' => [
                     'submitted' => 'secondary',
@@ -88,7 +122,7 @@
             [
                 'label' => __('application.column_updated_at'),
                 'type' => 'custom',
-                'field' => 'updated_at',
+                'column' => 'updated_at',
                 'sortable' => true,
                 'render' => function ($item) {
                     if (!$item->updated_at) {

@@ -8,8 +8,8 @@
                 <label class="ms-3 mb-0">每页</label>
                 <select name="per_page" class="form-select form-select-sm w-auto"
                     onchange="window.location.href = addQueryParam(window.location.href, 'per_page', this.value)">
-                    @foreach([10, 25, 50, 100] as $size)
-                        <option value="{{ $size }}" @selected(request('per_page', 10) == $size)>{{ $size }}</option>
+                    @foreach([10, 20, 25, 50, 100] as $size)
+                        <option value="{{ $size }}" @selected(request('per_page', 20) == $size)>{{ $size }}</option>
                     @endforeach
                 </select>
                 <label class="mb-0">条</label>

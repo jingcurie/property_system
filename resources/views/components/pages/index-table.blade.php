@@ -2,7 +2,7 @@
 <div class="container-fluid px-0">
     <!-- 顶部标题栏 -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-       <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center">
             <div class="icon-wrapper me-3">
                 <i class="{{ $pageIcon ?? 'bi bi-list' }} text-primary fs-4"></i>
             </div>
@@ -40,27 +40,127 @@
         </div>
     </div>
 
-    {{-- {{ dd($partialsForfilter) }} --}}
-
     <div class="card shadow-sm">
         <!-- 搜索栏 -->
         <form method="GET" action="{{ $searchAction ?? request()->url() }}" id="filter-form" class="mb-3">
-            <div class="card-header bg-light border-0 bg-transparent py-2 px-0 d-flex flex-wrap gap-2 align-items-center">
+            <input type="hidden" name="searchKeywordFields" value="{{ json_encode($searchKeywordFields) }}">
+            <div
+                class="card-header bg-light border-0 bg-transparent py-2 px-0 d-flex flex-wrap gap-2 align-items-center">
                 @if (!empty($searchKeywordFields))
                     <div class="input-group border rounded" style="max-width: 300px;">
                         <span class="input-group-text bg-white border-0 rounded-start">
                             <i class="bi bi-search text-secondary"></i>
                         </span>
-                        <input type="text" name="keyword" value="{{ request('keyword') }}"
-                            class="form-control border-0 shadow-none rounded-end"
-                            placeholder="搜索{{ implode('、', $searchKeywordFields) }}...">
+
+                        @php
+                            $placeholders = collect($searchKeywordFields ?? [])
+                                ->pluck('label')
+                                ->implode(' / ');
+                        @endphp
+                        <input type="text" name="keyword" value="{{ old('keyword', request('keyword')) }}"
+                            class="form-control border-0 shadow-none rounded-end" placeholder="搜索：{{ $placeholders }}">
+                    </div>
+                @endif
+
+
+                @php
+                    $mergedFilterFields = [];
+
+                    // 先加高级筛选字段
+                    if (!empty($filterFields)) {
+                        $mergedFilterFields = $filterFields;
+                    }
+
+                    // 再加快速筛选字段（自动补 type）
+                    if (!empty($quickFilters)) {
+                        $quickWithType = array_map(function ($filter) {
+                            return array_merge(['type' => 'select'], $filter); // 默认加 type=select
+                        }, $quickFilters);
+
+                        $mergedFilterFields = array_merge($mergedFilterFields, $quickWithType);
+                    }
+                @endphp
+
+                <input type="hidden" name="filterFields" value="{{ json_encode($mergedFilterFields) }}">
+
+                {{-- 快速筛选区 --}}
+                @if (!empty($quickFilters))
+                    <div class="dropdown">
+                        @foreach ($quickFilters as $filter)
+                            @php
+                                $hasFilter = in_array($filter['key'], (array) request('filters', []));
+                                $param = request("filter_values.{$filter['key']}", null);
+
+                                if (!$hasFilter) {
+                                    // 没有在 filters 里 → 初始加载 → 默认全选
+                                    $selectedValues = array_keys($filter['options']);
+                                } else {
+                                    // 在 filters 里 → 用户有操作
+                                    $selectedValues = $param !== null ? (array) $param : []; // 没有值 → 全不选
+                                }
+                            @endphp
+
+                            @php
+                                $selectedLabels = [];
+                                if (count($selectedValues) > 0) {
+                                    foreach ($selectedValues as $val) {
+                                        $selectedLabels[] = $filter['options'][$val] ?? $val;
+                                    }
+                                }
+                            @endphp
+
+                            <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                                {{ $filter['label'] }}
+                                @if (count($selectedValues) > 0)
+                                    ({{ count($selectedValues) }}: {{ implode(', ', $selectedLabels) }})
+                                @endif
+                            </button>
+                            <ul class="dropdown-menu p-2" style="min-width: 220px;" data-bs-auto-close="outside">
+                                <input type="hidden" name="filters[]" value="{{ $filter['key'] }}">
+
+                                <li class="d-flex justify-content-between align-items-center px-2 mb-2">
+                                    <button type="button" class="btn btn-sm btn-link p-0 quick-filter-select-all"
+                                        data-key="{{ $filter['key'] }}">
+                                        全选
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-link p-0 quick-filter-deselect-all"
+                                        data-key="{{ $filter['key'] }}">
+                                        全不选
+                                    </button>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+
+                                @foreach ($filter['options'] as $value => $label)
+                                    <li>
+                                        <label class="dropdown-item d-flex align-items-center">
+                                            <input type="checkbox" name="filter_values[{{ $filter['key'] }}][]"
+                                                value="{{ $value }}"
+                                                class="me-2 quick-filter-checkbox quick-filter-{{ $filter['key'] }}"
+                                                {{ in_array($value, $selectedValues) ? 'checked' : '' }}>
+                                            {{ $label }}
+                                        </label>
+                                    </li>
+                                @endforeach
+                                {{-- 应用按钮放在最后 --}}
+                                <li class="mt-2 px-2 d-flex justify-content-end">
+                                    <button type="submit" class="btn btn-sm btn-primary">
+                                        应用筛选
+                                    </button>
+                                </li>
+                            </ul>
+                        @endforeach
+
+
                     </div>
                 @endif
 
                 <!-- 筛选字段容器（可选） -->
                 @if (!empty($filterFields))
                     <div class="dropdown">
-                        <input type="hidden" name="filterFields" value="{{ json_encode($filterFields) }}">
+
                         <button class="btn btn-outline-secondary dropdown-toggle" type="button"
                             data-bs-toggle="dropdown">
                             <i class="bi bi-funnel me-1"></i> 添加筛选
@@ -111,6 +211,9 @@
                         @if (request('filters'))
                             ，已使用 {{ count(request('filters')) }} 个筛选条件
                         @endif
+
+                        {{-- 追加总记录数 --}}
+                        ，共 <strong>{{ $records->total() ?? $records->count() }}</strong> 条记录
                     </div>
                     <a href="{{ route($routeName) }}" class="btn btn-sm btn-outline-secondary">
                         <i class="bi bi-x-circle"></i> 清除筛选
@@ -125,6 +228,36 @@
                 onsubmit="return confirm('确认批量删除？')">
                 @csrf
 
+                {{-- 把排序信息从$columns提取出来存入隐藏字段 --}}
+                @php
+                    $sortableFields = collect($columns)
+                        ->filter(fn($col) => $col['sortable'] ?? false)
+                        ->flatMap(function ($col) {
+                            if (isset($col['sort_field'])) {
+                                return [$col['sort_field'] => true];
+                            } elseif (isset($col['sort_fields'])) {
+                                return collect($col['sort_fields'])->mapWithKeys(fn($field) => [$field => true]);
+                            } elseif (isset($col['column'])) {
+                                return [$col['column'] => true];
+                            }
+                            return [];
+                        })
+                        ->keys()
+                        ->map(function ($key) {
+                            if (str_contains($key, '.')) {
+                                $parts = explode('.', $key);
+                                $column = array_pop($parts);
+                                $relation = implode('.', $parts);
+                                return ['key' => $key, 'relation' => $relation, 'column' => $column];
+                            } else {
+                                return ['key' => $key, 'relation' => null, 'column' => $key];
+                            }
+                        })
+                        ->keyBy('key')
+                        ->toArray();
+                @endphp
+
+                <input type="hidden" name="sortableFields" value='@json($sortableFields)'>
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
@@ -136,14 +269,17 @@
                             <!-- 动态表头列 -->
                             @foreach ($columns as $col)
                                 @php
-                                    $sortField = $col['field'] ?? null;
+                                    $sortField = $col['column'] ?? null;
                                     $isSortable = $col['sortable'] ?? false;
                                     $isActive = request('sort') === $sortField;
                                     $dir = $isActive && request('direction') === 'asc' ? 'desc' : 'asc';
                                 @endphp
                                 <th>
+                                    @php
+                                        $sortableFieldsJson = json_encode($sortableFields);
+                                    @endphp
                                     @if ($isSortable && $sortField)
-                                        <a href="{{ request()->fullUrlWithQuery(['sort' => $sortField, 'direction' => $dir]) }}"
+                                        <a href="{{ request()->fullUrlWithQuery(['sort' => $sortField, 'direction' => $dir, 'sortableFields' => $sortableFieldsJson]) }}"
                                             class="sort-link {{ $isActive ? 'text-dark fw-bold' : 'text-muted' }}">
                                             {{ $col['label'] }}
                                             <span class="sort-icons">
@@ -175,7 +311,13 @@
 
                     <tbody>
                         @forelse ($records as $item)
-                            <tr class="table-row-hover">
+                            @php
+                                $clickUrl = isset($rowClickUrl) ? $rowClickUrl($item) : null;
+                            @endphp
+                            <tr
+                                @if ($clickUrl) onclick="handleRowClick(event, '{{ $clickUrl }}')"
+                                class="table-row-hover"
+                                style="cursor: pointer;" @endif>
                                 <!-- 勾选框 -->
                                 <td>
                                     <input type="checkbox" name="selected_ids[]"
@@ -187,7 +329,7 @@
                                     <td>
                                         @php
                                             $type = $col['type'] ?? 'text';
-                                            $value = data_get($item, $col['field'] ?? null);
+                                            $value = data_get($item, $col['column'] ?? null);
                                         @endphp
 
                                         @switch($type)
@@ -198,10 +340,10 @@
 
                                                 @if ($cover)
                                                     <div class="position-relative rounded border"
-                                                        style="width: 80px; height: 50px; overflow: hidden; background: #f8f9fa; cursor: pointer;"
-                                                        onclick="openMediaModal('{{ $item->property_id }}')">
+                                                        style="width: 80px; height: 50px; overflow: hidden; background: #f8f9fa; cursor: pointer;">
                                                         <img src="{{ url('/media/property/' . $item->property_id . '/' . basename($cover->file_path)) }}"
-                                                            class="w-100 h-100" style={{ $col['style'] }}>
+                                                            class="w-100 h-100" style={{ $col['style'] }}
+                                                            onclick="openMediaModal('{{ $item->property_id }}')">
                                                     </div>
                                                 @else
                                                     <span class="text-muted small">无</span>
@@ -217,10 +359,10 @@
 
                                             @case('combine')
                                                 <div>
-                                                    {{ data_get($item, $col['fields'][0]) }}
+                                                    {{ data_get($item, $col['columns'][0]) }}
                                                     <br>
                                                     <small class="text-muted">
-                                                        {{ data_get($item, $col['fields'][1]) }}
+                                                        {{ data_get($item, $col['columns'][1]) }}
                                                     </small>
                                                 </div>
                                             @break
@@ -249,7 +391,7 @@
                                 <!-- 操作按钮列 -->
                                 @if (!empty($actions))
                                     <td class="text-end">
-                                        <div class="dropdown d-flex justify-content-end">
+                                        <div class="dropdown d-flex justify-content-end no-row-click">
                                             <button type="button" class="btn-action-menu" data-bs-toggle="dropdown">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
@@ -602,6 +744,54 @@
                         }
                     });
                 });
+            });
+        });
+    </script>
+
+    <script>
+        function handleRowClick(event, url) {
+            const ignoreTags = ['A', 'BUTTON', 'SVG', 'INPUT', 'LABEL', 'IMG'];
+            if (ignoreTags.includes(event.target.tagName) || event.target.closest('.no-row-click')) {
+                return;
+            }
+
+            window.location.href = url;
+        }
+    </script>
+
+    <script>
+        // 阻止 checkbox 点击关闭菜单
+        document.querySelectorAll('.quick-filter-checkbox').forEach(cb => {
+            cb.addEventListener('click', e => e.stopPropagation());
+
+            cb.addEventListener('change', function() {
+                const form = this.closest('form');
+                refreshTable(form);
+            });
+        });
+
+        // 全选
+
+        document.querySelectorAll('.quick-filter-select-all').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const key = this.dataset.key;
+                const checkboxes = document.querySelectorAll('.quick-filter-' + key);
+                checkboxes.forEach(cb => cb.checked = true);
+                // 不再触发 refreshTable，等用户点击“应用”再提交
+            });
+        });
+
+        // 全不选
+        document.querySelectorAll('.quick-filter-deselect-all').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const key = this.dataset.key;
+                const checkboxes = document.querySelectorAll('.quick-filter-' + key);
+                checkboxes.forEach(cb => cb.checked = false);
+                // 不再触发 refreshTable
             });
         });
     </script>

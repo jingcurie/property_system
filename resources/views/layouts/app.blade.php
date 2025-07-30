@@ -76,7 +76,7 @@
                             onclick="handleSubmenuClick(this)">
                             <i class="bi bi-house-check"></i> {{ __('menu.properties') }}
                         </a>
-                        <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
+                        <a href="{{ route('owners.index') }}" class="submenu-item" onclick="handleSubmenuClick(this)">
                             <i class="bi bi-person-badge"></i> {{ __('menu.rental_owners') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
@@ -122,7 +122,7 @@
                             onclick="handleSubmenuClick(this)">
                             <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
                         </a>
-                        <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
+                        <a href="{{ route('leases.index') }}" class="submenu-item" onclick="handleSubmenuClick(this)">
                             <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
                         </a>
                     </div>
@@ -134,7 +134,7 @@
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
                             <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
                         </a>
-                        <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
+                        <a href="{{ route('leases.index') }}" class="submenu-item" onclick="handleFloatingMenuClick(this)">
                             <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
                         </a>
                     </div>
@@ -451,6 +451,7 @@
         <div class="notification-list px-3 py-2" style="max-height: 400px; overflow-y: auto;">
             <!-- 动态内容插入这里 -->
         </div>
+       
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -800,16 +801,16 @@
 
 
     <script>
-        //notification
-        setInterval(() => {
-            fetch("/notifications/generate", {
-                method: "POST",
-                headers: {
-                    "X-CSRF-TOKEN": '{{ csrf_token() }}',
-                    "Content-Type": "application/json"
-                }
-            });
-        }, 30000); // 每 30 秒请求一次
+        // //notification
+        // setInterval(() => {
+        //     fetch("/notifications/generate", {
+        //         method: "POST",
+        //         headers: {
+        //             "X-CSRF-TOKEN": '{{ csrf_token() }}',
+        //             "Content-Type": "application/json"
+        //         }
+        //     });
+        // }, 30000); // 每 30 秒请求一次
 
 
 
@@ -844,7 +845,7 @@
 
         //初始执行一次，并每 30 秒刷新一次
         fetchNotifications();
-        setInterval(fetchNotifications, 30000);
+        // setInterval(fetchNotifications, 30000);
     </script>
 
     @stack('scripts')

@@ -19,7 +19,7 @@
       <div class="col-md-4">
         <label class="form-label">Lease Type</label>
         <select name="lease_type" class="form-select">
-          <option value="fixed" {{ old('lease_type', $lease->lease_type ?? '') == 'fixed' ? 'selected' : '' }}>Fixed Term</option>
+          <option value="fixed_term" {{ old('lease_type', $lease->lease_type ?? '') == 'fixed' ? 'selected' : '' }}>Fixed Term</option>
           <option value="month_to_month" {{ old('lease_type', $lease->lease_type ?? '') == 'month_to_month' ? 'selected' : '' }}>Month-to-Month</option>
         </select>
       </div>
@@ -28,8 +28,8 @@
         <label class="form-label">Property</label>
         <select name="property_id" class="form-select" required>
           @foreach($properties as $property)
-            <option value="{{ $property->id }}" {{ old('property_id', $lease->property_id ?? '') == $property->id ? 'selected' : '' }}>
-              {{ $property->address }}
+            <option value="{{ $property->property_id }}" {{ old('property_id', $lease->property_id ?? '') == $property->property_id ? 'selected' : '' }}>
+              {{ $property->address_street .  ", " . $property->address_city}}
             </option>
           @endforeach
         </select>
@@ -38,7 +38,7 @@
         <label class="form-label">Tenant</label>
         <select name="tenant_id" class="form-select" required>
           @foreach($tenants as $tenant)
-            <option value="{{ $tenant->id }}" {{ old('tenant_id', $lease->tenant_id ?? '') == $tenant->id ? 'selected' : '' }}>
+            <option value="{{ $tenant->tenant_id }}" {{ old('tenant_id', $lease->tenant_id ?? '') == $tenant->tenant_id ? 'selected' : '' }}>
               {{ $tenant->name }}
             </option>
           @endforeach
@@ -62,11 +62,11 @@
     <div class="card-body row g-3">
       <div class="col-md-4">
         <label class="form-label">Start Date</label>
-        <input type="date" name="start_date" class="form-control" value="{{ old('start_date', $lease->start_date ?? '') }}" required>
+        <input type="date" name="start_date" class="form-control" value="{{ old('start_date', optional($lease?->start_date)->format('Y-m-d') ?? '') }}" required>
       </div>
       <div class="col-md-4">
         <label class="form-label">End Date</label>
-        <input type="date" name="end_date" class="form-control" value="{{ old('end_date', $lease->end_date ?? '') }}" required>
+        <input type="date" name="end_date" class="form-control" value="{{ old('end_date', optional($lease?->end_date)->format('Y-m-d') ?? '') }}" required>
       </div>
       <div class="col-md-4">
         <label class="form-label">Monthly Rent</label>

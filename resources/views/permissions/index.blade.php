@@ -17,7 +17,7 @@
         'columns' => [
             [
                 'label' => 'Name',
-                'field' => 'name',
+                'column' => 'name',
                 'sortable' => true,
             ],
             [
@@ -29,7 +29,7 @@
             ],
             [
                 'label' => 'Created at',
-                'field' => 'created_at',
+                'column' => 'created_at',
                 'sortable' => true,
                 'render' => fn($item) => $item->created_at->format('Y-m-d'),
             ],

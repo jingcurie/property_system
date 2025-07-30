@@ -9,6 +9,30 @@ use Illuminate\Support\Facades\DB;
 
 class OwnerController extends Controller
 {
+    /**
+     * 列表页
+     */
+    public function index(Request $request)
+    {
+        $query = Owner::query();
+
+        //调用helpers中的functions
+        $query = applyKeywordSearch($query, $request);
+        $query = applyFilters($query, $request);
+        $query = applySorting($query, $request);
+        $properties = applyPagination($query, $request);
+
+        return view('owners.index', compact('owners'));
+    }
+
+    /**
+     * 创建页
+     */
+    public function create()
+    {
+        return view('owners.create');
+    }
+    
     public function store(Request $request)
     {
         $validated = $request->validate([

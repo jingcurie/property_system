@@ -37,7 +37,7 @@
             ],
             [
                 'label' => '邮箱',
-                'field' => 'email',
+                'column' => 'email',
             ],
             [
                 'label' => '角色',
@@ -59,10 +59,14 @@
                 },
             ],
     
-            ['label' => '创建时间', 'field' => 'created_at', 'sortable' => false],
+            [
+                'label' => '创建时间', 
+                'column' => 'created_at', 
+                'sortable' => false
+            ],
             [
                 'label' => '状态',
-                'field' => 'is_active',
+                'column' => 'is_active',
                 'type' => 'custom',
                 'render' => function ($user) {
                     $checked = $user->is_active ? 'checked' : '';

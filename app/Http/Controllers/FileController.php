@@ -140,15 +140,12 @@ class FileController extends Controller
             if (!file_exists($tempPath)) {
                 continue; // 跳过找不到的文件
             }
-
             // 模块路径识别
             $fileableType = $item['fileable_type'] ?? 'unknown';
             $fileableId = $item['fileable_id'] ?? null;
-
             if (!$fileableId) {
                 continue; // 没有目标ID，跳过
             }
-
             // 模块名用于目录，如 App\Models\RentalApplication → rental_applications
             $moduleName = \Str::plural(\Str::kebab(class_basename($fileableType)));
 
@@ -158,11 +155,9 @@ class FileController extends Controller
             $newRelativeDir = "uploads/files/{$moduleName}/{$fileableId}";
             $newRelativePath = "{$newRelativeDir}/{$newFileName}";
             $newStoragePath = storage_path("app/public/{$newRelativePath}");
-
             // 创建目录并移动文件
             \File::ensureDirectoryExists(dirname($newStoragePath));
             \File::move($tempPath, $newStoragePath);
-
             // 保存记录到数据库
             $file = new \App\Models\File(); // 或 Attachment，根据你的模型名
             $file->title = $item['title'] ?? null;

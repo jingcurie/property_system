@@ -10,12 +10,18 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "docusign/esign-client": "^8.3",
         "kyslik/column-sortable": "^7.0",
         "laravel/framework": "^12.0",
         "laravel/tinker": "^2.10.1",
+        "mikehaertl/php-pdftk": "^0.13.1",
+        "setasign/fpdf": "^1.8",
+        "setasign/fpdi": "^2.6",
         "spatie/laravel-permission": "^6.20"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
         "laravel-lang/lang": "^15.22",
         "laravel/pail": "^1.2.2",

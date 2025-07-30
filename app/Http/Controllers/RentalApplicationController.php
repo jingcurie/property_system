@@ -17,25 +17,20 @@ class RentalApplicationController extends Controller
 {
     public function index(Request $request)
     {
-        $keyword = $request->input('keyword');
-        $filterStatus = $request->input('filter_values.status');
-
+        $query = RentalApplication::with([
+            'property',
+            'applicant',
+            'employment',
+            'reviewer',
+            'files',
+        ])->whereNull('deleted_at');
         
 
-        $sortField = $request->input('sort', 'submitted_at'); // 默认按提交时间
-        $direction = $request->input('direction', 'desc');    // 默认倒序
-
-        $rentalApplications = RentalApplication::query()
-            ->with(['property', 'employment', 'applicant', 'reviewer'])
-            ->when($keyword, fn($q) => $q->where(function ($query) use ($keyword) {
-                $query->where('application_code', 'like', "%{$keyword}%")
-                    ->orWhere('notes', 'like', "%{$keyword}%");
-            }))
-            ->when($filterStatus, fn($q) => $q->where('status', $filterStatus))
-            ->when($sortField && in_array($sortField, ['application_code', 'submitted_at', 'updated_at', 'status']), function ($q) use ($sortField, $direction) {
-                $q->orderBy($sortField, $direction);
-            })
-            ->paginate(10);
+        //调用helpers中的functions
+        $query = applyKeywordSearch($query, $request);
+        $query = applyFilters($query, $request);
+        $query = applySorting($query, $request);
+        $rentalApplications = applyPagination($query, $request);
 
         return view('rental_applications.index', compact('rentalApplications'));
     }
@@ -50,7 +45,7 @@ class RentalApplicationController extends Controller
     public function createFromProperty($id)
     {
         $property = Property::findOrFail($id); // ✅ 正确：赋值给 $property
-        $properties = Property::whereNull('deleted_at')->get(); 
+        $properties = Property::whereNull('deleted_at')->get();
 
         return view('rental_applications.create', compact('property', 'properties'));
     }
@@ -153,7 +148,7 @@ class RentalApplicationController extends Controller
         });
 
         // return redirect()->route('rental_applications.index')->with('success', 'Application created successfully.');
-        return redirect()->route('rental_applications.show',$application)->with('success', 'Application created successfully.');
+        return redirect()->route('rental_applications.show', $application)->with('success', 'Application created successfully.');
     }
 
 
@@ -320,25 +315,6 @@ class RentalApplicationController extends Controller
             'files',
             'files.uploader',
         ]);
-
-        // $attachmentsJson = $rentalApplication->files->map(function ($f) {
-        //     return [
-        //         'id' => $f->id,
-        //         'title' => $f->title,
-        //         'filename' => $f->filename,
-        //         'path' => $f->path,
-        //         'category' => $f->tag ?? 'uncategorized',
-        //         'description' => $f->description,
-        //         'is_cover' => $f->is_cover,
-        //         'mime_type' => $f->mime_type,
-        //         'size' => $f->size,
-        //         'disk' => $f->disk,
-        //         'fileable_type' => $f->fileable_type,
-        //         'fileable_id' => $f->fileable_id,
-        //         'uploaded_by' => $f->uploaded_by,
-        //         'created_at' => $f->created_at->toDateTimeString(),
-        //     ];
-        // });
 
         $attachments = $rentalApplication->files->map(function ($file) {
             return [

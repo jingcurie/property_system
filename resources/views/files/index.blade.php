@@ -7,11 +7,39 @@
         'createUrl' => null, // 不需要新增按钮可设为 null
         'createLabel' => '',
         'exportUrl' => null,
-    
-        'searchKeywordFields' => ['File Name', 'Category', 'Uploaded By'],
+
+        'searchKeywordFields' => [
+            [
+                'relation' => null,
+                'column' => 'filename',
+                'label' => 'File name',
+            ],
+        ],
+
         'filterFields' => [
             ['key' => 'category', 'label' => 'Category'],
             ['key' => 'uploaded_by', 'label' => 'Uploaded By'],
+        ],
+
+        'filterFields' => [
+            [
+                'key' => 'category',
+                'label' => 'Category',
+                'type' => 'select',
+                'column' => 'category',
+                'options' => [
+                    'uncategorized' => 'Uncategorized',
+                    'applicant' => 'Applicant',
+                    'lease' => 'Lease',
+                    'report' => 'Report',
+                ],
+            ],
+            [
+                'key' => 'rent',
+                'label' => 'Uploaded by',
+                'type' => 'text',
+                'column' => 'uploaded_by',
+            ],
         ],
     
         'records' => $files,
@@ -25,7 +53,7 @@
             ],
             [
                 'label' => 'Size',
-                'field' => 'size',
+                'column' => 'size',
                 'sortable' => true,
                 'type' => 'custom',
                 'render' => fn($file) => formatBytes($file->size),
@@ -33,17 +61,17 @@
     
             [
                 'label' => 'Category',
-                'field' => 'category',
+                'column' => 'category',
                 'sortable' => true,
             ],
             [
                 'label' => 'Uploaded By',
-                'field' => 'uploaded_by_user.name',
+                'column' => 'uploaded_by_user.name',
                 'sortable' => true,
             ],
             [
                 'label' => 'Updated At',
-                'field' => 'updated_at',
+                'column' => 'updated_at',
                 'sortable' => true,
             ],
         ],
@@ -74,8 +102,8 @@
         ],
     
         //'batchDeleteUrl' => route('files.batchDelete'),
-        'partialsForfilter' => 'permissions.partials.filter_fields',
-        'routeName' => 'files.index',
+        'partialsForfilter' => 'components.filters.filter_fields',
+        'routeName' => 'file-center.index',
         'module' => 'files',
     ])
 @endsection
