@@ -4,8 +4,6 @@
     @include('components.pages.index-table', [
         'pageTitle' => 'Permissions',
         'pageIcon' => 'bi bi-shield-lock',
-        'createUrl' => route('permissions.create'),
-        'createLabel' => 'Permission',
         'searchKeywordFields' => ['name'],
         'filterFields' => [
             ['key' => 'name', 'label' => 'Module'],
@@ -13,6 +11,40 @@
 
         'records' => $permissions,
         'paginator' => $permissions,
+
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('property.create_label'),
+                    'url' => route('properties.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => route('properties.export', request()->all()),
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                    ],
+                ],
+            ],
+        ],
 
         'columns' => [
             [

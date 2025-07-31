@@ -20,7 +20,7 @@ class OwnerController extends Controller
         $query = applyKeywordSearch($query, $request);
         $query = applyFilters($query, $request);
         $query = applySorting($query, $request);
-        $properties = applyPagination($query, $request);
+        $owners = applyPagination($query, $request);
 
         return view('owners.index', compact('owners'));
     }

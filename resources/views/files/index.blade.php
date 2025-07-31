@@ -4,9 +4,40 @@
     @include('components.pages.index-table', [
         'pageTitle' => 'File Management',
         'pageIcon' => 'bi bi-folder2-open',
-        'createUrl' => null, // 不需要新增按钮可设为 null
-        'createLabel' => '',
-        'exportUrl' => null,
+
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('property.create_label'),
+                    'url' => route('properties.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => route('properties.export', request()->all()),
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                    ],
+                ],
+            ],
+        ],
 
         'searchKeywordFields' => [
             [

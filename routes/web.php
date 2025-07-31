@@ -25,6 +25,8 @@ use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DocuSignWebhookController;
 
+use App\Http\Controllers\DictController;
+
 use App\Models\PropertyMedia;
 use App\Models\Notification;
 use App\Models\Lease;
@@ -251,4 +253,19 @@ Route::middleware(['auth'])->group(function () {
     //owners
     Route::resource('owners', OwnerController::class);
 
+    // 字典管理主页面
+    Route::get('dict', [DictController::class, 'index'])->name('dict.index');
+
+    // 分组管理 Ajax 路由
+    Route::get('dict/groups', [DictController::class, 'getGroups'])->name('dict.groups.get');
+    Route::post('dict/groups', [DictController::class, 'storeGroup'])->name('dict.groups.store');
+    Route::put('dict/groups/{group}', [DictController::class, 'updateGroup'])->name('dict.groups.update');
+    Route::delete('dict/groups/{group}', [DictController::class, 'destroyGroup'])->name('dict.groups.destroy');
+
+    // 字典项管理 Ajax 路由
+    Route::get('dict/items', [DictController::class, 'getItems'])->name('dict.items.get');
+    Route::post('dict/items', [DictController::class, 'storeItem'])->name('dict.items.store');
+    Route::put('dict/items/{item}', [DictController::class, 'updateItem'])->name('dict.items.update');
+    Route::delete('dict/items/{item}', [DictController::class, 'destroyItem'])->name('dict.items.destroy');
+    Route::post('dict/items/sort', [DictController::class, 'updateSort'])->name('dict.items.sort');
 });

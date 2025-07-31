@@ -14,6 +14,41 @@
         'routeName' => 'applicants.index',
         'partialsForfilter' => 'components.filters.filter_fields',
         'module' => 'applicants',
+
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('property.create_label'),
+                    'url' => route('applicants.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => "",
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+
         'filterFields' => [
             [
                 'key' => 'phone',

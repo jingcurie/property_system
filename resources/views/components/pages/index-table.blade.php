@@ -12,7 +12,7 @@
         </div>
 
         <!-- 操作栏 -->
-        <div class="d-flex gap-2">
+        {{-- <div class="d-flex gap-2">
             <!-- 默认：新增 / 导出 -->
             <div id="default-toolbar" class="d-flex gap-2">
                 @if (!empty($exportUrl))
@@ -25,17 +25,71 @@
                 </a>
             </div>
             <!-- 已勾选：批量操作 -->
-            <div id="selected-toolbar" class="d-none">
+            <div class="dropdown d-none" id="selected-toolbar">
                 <span class="me-2 text-muted">已选中 <strong id="selected-count">0</strong> 项</span>
-                <a href="#" class="btn btn-outline-success" onclick="submitBatchApprove()">
-                    <i class="bi bi-check2-circle me-1"></i> 批量审核通过
-                </a>
-                <a href="#" class="btn btn-outline-danger" onclick="submitBatchReject()">
-                    <i class="bi bi-x-octagon me-1"></i> 批量拒绝
-                </a>
-                <a href="#" class="btn btn-danger" onclick="submitBatchDelete()">
-                    <i class="bi bi-trash3 me-1"></i> 批量删除
-                </a>
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="bulkActionDropdown"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    批量处理
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="bulkActionDropdown">
+                    <li>
+                        <button href="#" class="dropdown-item bulk-action" onclick="submitBatchDelete()">
+                            <i class="bi bi-trash3 me-1"></i> 批量删除
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item bulk-action" onclick="submitBatchApprove()">
+                            <i class="bi bi-check-circle me-2"></i> 批量审核通过
+                        </button>
+                    </li>
+                    <li>
+                        <button class="dropdown-item bulk-action" onclick="submitBatchReject()">
+                            <i class="bi bi-x-circle me-2"></i> 批量拒绝
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div> --}}
+        <!-- Toolbar -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <div class="d-flex gap-2" id="toolbar-default">
+                @foreach ($toolbar['default'] as $button)
+                    @if ($button['type'] === 'link')
+                        <a href="{{ $button['url'] ?? '#' }}" class="btn {{ $button['class'] ?? 'btn-primary' }}"
+                            @if (isset($button['onclick'])) onclick="{{ $button['onclick'] }}" @endif>
+                            <i class="{{ $button['icon'] }}"></i> {{ $button['label'] }}
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+
+            <!-- 选中状态下的工具栏 -->
+            <div id="toolbar-selected" class="d-flex align-items-center gap-3 d-none">
+                <span class="text-muted">已选中 <strong id="selected-count">0</strong> 项</span>
+                <div class="btn-group">
+                    <button class="btn btn-primary dropdown-toggle d-flex align-items-center gap-2 px-3"
+                        data-bs-toggle="dropdown">
+                        <i class="bi bi-gear-fill"></i>
+                        <span>批量操作</span>
+                    </button>
+                    <ul class="dropdown-menu shadow-sm">
+                        <li>
+                            <a class="dropdown-item text-danger" href="#" data-action="bulk-delete">
+                                <i class="bi bi-trash-fill me-2"></i> 批量删除
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-success" href="#" data-action="bulk-approve">
+                                <i class="bi bi-check-circle-fill me-2"></i> 批量审核通过
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-warning" href="#" data-action="bulk-reject">
+                                <i class="bi bi-x-circle-fill me-2"></i> 批量拒绝
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -118,16 +172,15 @@
                             </button>
                             <ul class="dropdown-menu p-2" style="min-width: 220px;" data-bs-auto-close="outside">
                                 <input type="hidden" name="filters[]" value="{{ $filter['key'] }}">
-
-                                <li class="d-flex justify-content-between align-items-center px-2 mb-2">
-                                    <button type="button" class="btn btn-sm btn-link p-0 quick-filter-select-all"
-                                        data-key="{{ $filter['key'] }}">
+                                @php
+                                    $allSelected = count($selectedValues) === count($filter['options']);
+                                @endphp
+                                <li class="d-flex align-items-center px-2 mb-2">
+                                    <label class="form-check-label">
+                                        <input type="checkbox" class="form-check-input quick-filter-select-toggle"
+                                            data-key="{{ $filter['key'] }}" {{ $allSelected ? 'checked' : '' }}>
                                         全选
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-link p-0 quick-filter-deselect-all"
-                                        data-key="{{ $filter['key'] }}">
-                                        全不选
-                                    </button>
+                                    </label>
                                 </li>
                                 <li>
                                     <hr class="dropdown-divider">
@@ -138,7 +191,7 @@
                                         <label class="dropdown-item d-flex align-items-center">
                                             <input type="checkbox" name="filter_values[{{ $filter['key'] }}][]"
                                                 value="{{ $value }}"
-                                                class="me-2 quick-filter-checkbox quick-filter-{{ $filter['key'] }}"
+                                                class="form-check-input me-2 quick-filter-checkbox quick-filter-{{ $filter['key'] }}"
                                                 {{ in_array($value, $selectedValues) ? 'checked' : '' }}>
                                             {{ $label }}
                                         </label>
@@ -157,7 +210,7 @@
                     </div>
                 @endif
 
-                <!-- 筛选字段容器（可选） -->
+                <!-- 其他筛选字段容器（可选） -->
                 @if (!empty($filterFields))
                     <div class="dropdown">
 
@@ -530,26 +583,30 @@
                 form.submit();
             });
         }
-    </script>
 
-
-    <!-- JS：批量选择 -->
-    <script>
-        function submitBatchDelete() {
+        function bulkDelete() {
             const selected = document.querySelectorAll('input[name="selected_ids[]"]:checked');
+
             if (selected.length === 0) {
-                showAlert('请至少选择一条记录进行删除');
+                console.log(selected);
+                showWarning('请至少选择一条记录进行删除');
                 return;
             }
             showConfirm('确定要删除该条记录吗？', function() {
                 document.getElementById('batch-delete-form').submit();
             });
         }
+    </script>
+
+
+    {{-- <!-- JS：批量选择 -->
+    <script>
+        
 
         document.getElementById('select-all')?.addEventListener('change', function(e) {
             document.querySelectorAll('input[name="selected_ids[]"]').forEach(cb => cb.checked = e.target.checked);
         });
-    </script>
+    </script> --}}
 
     <script>
         const activeFilters = new Set(@json(request('filters') ?? []));
@@ -610,60 +667,59 @@
                     if (checkbox) checkbox.checked = false;
                     activeFilters.delete(key);
                     setTimeout(syncFilterVisibility, 0);
+                    // 重新提交表单
+                    const form = document.getElementById('filter-form');
+                    if (form) form.submit();
                 }
             }
         });
     </script>
 
     <script>
-        function updateBatchActionBar() {
-            const selected = document.querySelectorAll('input[name="selected_ids[]"]:checked');
-            const bar = document.getElementById('batch-action-bar');
-            const countSpan = document.getElementById('selected-count');
-            if (selected.length > 0) {
-                bar.classList.remove('d-none');
-                countSpan.textContent = selected.length;
-            } else {
-                bar.classList.add('d-none');
-            }
-        }
-
-        // 页面加载后监听所有 checkbox 变化
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('input[name="selected_ids[]"]').forEach(cb => {
-                cb.addEventListener('change', updateBatchActionBar);
-            });
-            // select all 也要触发更新
-            document.getElementById('select-all')?.addEventListener('change', updateBatchActionBar);
-        });
-
         function updateToolbarVisibility() {
+            const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
             const checkedCount = document.querySelectorAll('input[name="selected_ids[]"]:checked').length;
-            const defaultToolbar = document.getElementById('default-toolbar');
-            const selectedToolbar = document.getElementById('selected-toolbar');
+            const defaultToolbar = document.getElementById('toolbar-default');
+            const selectedToolbar = document.getElementById('toolbar-selected');
             const countSpan = document.getElementById('selected-count');
 
             if (checkedCount > 0) {
-                defaultToolbar.classList.add('d-none');
-                selectedToolbar.classList.remove('d-none');
-                countSpan.textContent = checkedCount;
-
+                defaultToolbar?.classList.add('d-none');
+                selectedToolbar?.classList.remove('d-none');
+                if (countSpan) countSpan.textContent = checkedCount;
             } else {
-                defaultToolbar.classList.remove('d-none');
-                selectedToolbar.classList.add('d-none');
+                defaultToolbar?.classList.remove('d-none');
+                selectedToolbar?.classList.add('d-none');
             }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('input[name="selected_ids[]"]').forEach(cb => {
-                cb.addEventListener('change', updateToolbarVisibility);
-            });
-            document.getElementById('select-all')?.addEventListener('change', () => {
-                document.querySelectorAll('input[name="selected_ids[]"]').forEach(cb => {
-                    cb.checked = document.getElementById('select-all').checked;
-                });
+            const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
+            const selectAll = document.getElementById('select-all');
+
+            checkboxes.forEach(cb => cb.addEventListener('change', updateToolbarVisibility));
+            selectAll?.addEventListener('change', () => {
+                checkboxes.forEach(cb => cb.checked = selectAll.checked);
                 updateToolbarVisibility();
             });
+        });
+
+        document.addEventListener('click', e => {
+            const btn = e.target.closest('[data-action]');
+            if (!btn) return;
+
+            const action = btn.getAttribute('data-action');
+            switch (action) {
+                case 'bulk-delete':
+                    bulkDelete();
+                    break;
+                case 'bulk-approve':
+                    bulkApprove();
+                    break;
+                case 'bulk-reject':
+                    bulkReject();
+                    break;
+            }
         });
     </script>
 
@@ -760,6 +816,15 @@
     </script>
 
     <script>
+        document.addEventListener('change', e => {
+            if (e.target.classList.contains('quick-filter-select-toggle')) {
+                const key = e.target.dataset.key;
+                const isChecked = e.target.checked;
+                document.querySelectorAll(`.quick-filter-${key}`).forEach(cb => {
+                    cb.checked = isChecked;
+                });
+            }
+        });
         // 阻止 checkbox 点击关闭菜单
         document.querySelectorAll('.quick-filter-checkbox').forEach(cb => {
             cb.addEventListener('click', e => e.stopPropagation());

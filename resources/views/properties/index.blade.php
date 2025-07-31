@@ -241,10 +241,44 @@
     @include('components.pages.index-table', [
         'pageTitle' => __('property.page_title'),
         'pageIcon' => 'bi bi-houses-fill',
-        'createUrl' => route('properties.create'),
-        'createLabel' => __('property.create_label'),
-        'exportUrl' => route('properties.export', request()->all()),
+        // 'createUrl' => route('properties.create'),
+        // 'createLabel' => __('property.create_label'),
+        // 'exportUrl' => route('properties.export', request()->all()),
         'rowClickUrl' => fn($item) => route('properties.show', $item->property_id),
+    
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('property.create_label'),
+                    'url' => route('properties.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => route('properties.export', request()->all()),
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                    ],
+                ],
+            ],
+        ],
     
         'searchKeywordFields' => [
             [
@@ -279,18 +313,6 @@
         ],
     
         'filterFields' => [
-            // [
-            //     'key' => 'status',
-            //     'label' => __('property.filters.status'),
-            //     'type' => 'select',
-            //     'relation' => 'rentalInfo',
-            //     'column' => 'availability_status',
-            //     'options' => [
-            //         'Available' => __('property.availability_statuses.Available'),
-            //         'Leased' => __('property.availability_statuses.Leased'),
-            //         'Under Maintenance' => __('property.availability_statuses.Under_Maintenance'),
-            //     ],
-            // ],
             [
                 'key' => 'rent',
                 'label' => __('property.filters.monthly_rent'),
@@ -406,11 +428,11 @@
                         })->implode(' / ');
     
                     return '<div class="d-flex align-items-center">
-                            <i class="bi bi-person-badge me-2 text-secondary"></i>
-                            <span>' .
+                                        <i class="bi bi-person-badge me-2 text-secondary"></i>
+                                        <span>' .
                         $owners .
                         '</span>
-                        </div>';
+                                    </div>';
                 },
             ],
         ],

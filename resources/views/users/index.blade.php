@@ -4,9 +4,40 @@
     @include('components.pages.index-table', [
         'pageTitle' => '用户列表',
         'pageIcon' => 'bi bi-people-fill',
-        'createUrl' => route('users.create'),
-        'createLabel' => '用户',
-        'exportUrl' => '',
+
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('property.create_label'),
+                    'url' => route('properties.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => route('properties.export', request()->all()),
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                    ],
+                ],
+            ],
+        ],
     
         'searchKeywordFields' => ['用户名', '邮箱', '角色'],
         'filterFields' => [['key' => 'name', 'label' => '角色']],

@@ -3294,7 +3294,8 @@ namespace App\Models {
      *
      * @property mixed $deleted_by
      * @property \Illuminate\Support\Carbon|null $deleted_at
-     * @property bool|null $is_active
+     * @property \Illuminate\Support\Carbon $updated_at
+     * @property \Illuminate\Support\Carbon $created_at
      * @property string|null $notes
      * @property string|null $tax_id
      * @property string|null $address
@@ -3320,7 +3321,8 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereAddress($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereTaxId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereNotes($value)
-     * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereIsActive($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereCreatedAt($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereDeletedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereDeletedBy($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner active()

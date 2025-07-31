@@ -502,9 +502,14 @@ class PropertyController extends Controller
         // 获取所有 leases（含租客）
         $leases = $property->leases->whereNull('deleted_at');
 
-        // 当前有效合同的租客（end_date >= 今天）
+        // 当前有效合同
+        $activeLeases = $leases->filter(fn($lease) => $lease->end_date >= $today);
+        // 已过期合同
+        $expiredLeases = $leases->filter(fn($lease) => $lease->end_date < $today);
+
+        // 当前有效合同的租客
         $activeLeasesTenants = collect();
-        // 已过期合同的租客（end_date < 今天）
+        // 已过期合同的租客
         $expiredLeasesTenants = collect();
 
         foreach ($leases as $lease) {
@@ -527,9 +532,12 @@ class PropertyController extends Controller
             'allOwners',
             'attachments',
             'activeLeasesTenants',
-            'expiredLeasesTenants'
+            'expiredLeasesTenants',
+            'activeLeases',
+            'expiredLeases'
         ));
     }
+
 
 
     public function batchDelete(Request $request)

@@ -122,7 +122,8 @@
                             onclick="handleSubmenuClick(this)">
                             <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
                         </a>
-                        <a href="{{ route('leases.index') }}" class="submenu-item" onclick="handleSubmenuClick(this)">
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleSubmenuClick(this)">
                             <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
                         </a>
                     </div>
@@ -134,7 +135,8 @@
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
                             <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
                         </a>
-                        <a href="{{ route('leases.index') }}" class="submenu-item" onclick="handleFloatingMenuClick(this)">
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleFloatingMenuClick(this)">
                             <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
                         </a>
                     </div>
@@ -451,7 +453,7 @@
         <div class="notification-list px-3 py-2" style="max-height: 400px; overflow-y: auto;">
             <!-- 动态内容插入这里 -->
         </div>
-       
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -796,6 +798,20 @@
                 }
             });
         }
+
+        // 通用提示方法
+        function showAlert(type, title, text, callback) {
+            Swal.fire({
+                icon: type, // success, error, warning, info, question
+                title: title || '',
+                text: text || '',
+                confirmButtonText: '确定',
+            }).then((result) => {
+                if (callback && typeof callback === 'function') {
+                    callback(result);
+                }
+            });
+        }
     </script>
 
 
@@ -814,23 +830,23 @@
 
 
 
-       function fetchNotifications() {
-    fetch("/notifications/unread")
-        .then(res => res.json())
-        .then(data => {
-            const badge = document.getElementById('notification_amount');
-            badge.innerText = data.count;
-            badge.style.display = data.count > 0 ? 'inline-block' : 'none';
+        function fetchNotifications() {
+            fetch("/notifications/unread")
+                .then(res => res.json())
+                .then(data => {
+                    const badge = document.getElementById('notification_amount');
+                    badge.innerText = data.count;
+                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
 
-            const popup = document.getElementById('notificationPopup');
-            const list = popup.querySelector('.notification-list');
-            list.innerHTML = '';
+                    const popup = document.getElementById('notificationPopup');
+                    const list = popup.querySelector('.notification-list');
+                    list.innerHTML = '';
 
-            data.notifications.forEach(item => {
-                const notifEl = document.createElement('div');
-                notifEl.className = 'notification-item' + (item.is_read == 0 ? ' unread' : '');
+                    data.notifications.forEach(item => {
+                        const notifEl = document.createElement('div');
+                        notifEl.className = 'notification-item' + (item.is_read == 0 ? ' unread' : '');
 
-                notifEl.innerHTML = `
+                        notifEl.innerHTML = `
                     <div class="d-flex align-items-start gap-2">
                         <i class="bi ${item.icon} text-${item.color} mt-1"></i>
                         <div class="flex-grow-1">
@@ -838,14 +854,72 @@
                             <div class="text-muted small">${item.content}</div>
                         </div>
                     </div>`;
-                list.appendChild(notifEl);
-            });
-        });
-}
+                        list.appendChild(notifEl);
+                    });
+                });
+        }
 
         //初始执行一次，并每 30 秒刷新一次
         fetchNotifications();
         // setInterval(fetchNotifications, 30000);
+    </script>
+
+    <script>
+        function showToast(message, type = 'info') {
+            let container = document.getElementById('toast-container');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toast-container';
+                document.body.appendChild(container);
+            }
+
+            const icons = {
+                success: 'bi-check-circle-fill',
+                info: 'bi-info-circle-fill',
+                warning: 'bi-exclamation-triangle-fill',
+                danger: 'bi-x-circle-fill'
+            };
+
+            const iconClass = icons[type] || icons.info;
+
+            const toast = document.createElement('div');
+            toast.className = `custom-toast text-bg-${type} border-0 rounded p-2`;
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+
+            toast.innerHTML = `
+        <div class="d-flex align-items-center">
+            <i class="bi ${iconClass} toast-icon"></i>
+            <div class="toast-body flex-grow-1">${message}</div>
+            <button type="button" class="btn-close btn-close-white ms-2" aria-label="Close"></button>
+        </div>
+    `;
+
+            container.appendChild(toast);
+
+            // 触发显示动画
+            requestAnimationFrame(() => toast.classList.add('show'));
+
+            toast.querySelector('.btn-close').addEventListener('click', () => hideToast(toast));
+
+            setTimeout(() => hideToast(toast), 3000);
+        }
+
+        function hideToast(toast) {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            toast.addEventListener('transitionend', () => toast.remove(), {
+                once: true
+            });
+        }
+
+
+
+        showToast('操作成功', 'success');
+        showToast('警告提示：这个内容不对啊', 'warning');
+        showToast('信息提示', 'info');
+        showToast('错误提示', 'danger');
     </script>
 
     @stack('scripts')

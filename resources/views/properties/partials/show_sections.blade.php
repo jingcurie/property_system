@@ -37,7 +37,7 @@
     <div class="tab-pane fade show active" id="tab-summary">@include('properties.partials.tabs.summary')</div>
     <div class="tab-pane fade" id="tab-owners">@include('properties.partials.tabs.owners')</div>
     <div class="tab-pane fade" id="tab-tenants">@include('properties.partials.tabs.tenants')</div>
-    <div class="tab-pane fade" id="tab-leases"></div>
+    <div class="tab-pane fade" id="tab-leases">@include('properties.partials.tabs.leases')</div>
     <div class="tab-pane fade" id="tab-financials"></div>
     <div class="tab-pane fade" id="tab-files">@include('properties.partials.tabs.files')</div>
     <div class="tab-pane fade" id="tab-maintenance"></div>

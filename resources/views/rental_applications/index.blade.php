@@ -4,10 +4,50 @@
     @include('components.pages.index-table', [
         'pageTitle' => __('application.list_page_title'),
         'pageIcon' => 'bi bi-clipboard-check',
-        'createUrl' => route('rental_applications.create'),
-        'createLabel' => __('application.create_application'),
-        'exportUrl' => route('rental_applications.export'),
         'rowClickUrl' => fn($item) => route('rental_applications.show', $item),
+        'toolbar' => [
+            'default' => [
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-plus-circle',
+                    'label' => __('application.create_application'),
+                    'url' => route('rental_applications.create'),
+                    'class' => 'btn btn-primary',
+                ],
+                [
+                    'type' => 'link',
+                    'icon' => 'bi bi-download',
+                    'label' => __('property.export_label'),
+                    'url' => route('properties.export', request()->all()),
+                    'class' => 'btn btn-outline-secondary',
+                ],
+            ],
+            'selected' => [
+                [
+                    'type' => 'dropdown',
+                    'icon' => 'bi bi-list',
+                    'label' => '批量操作',
+                    'class' => 'btn btn-secondary dropdown-toggle',
+                    'items' => [
+                        [
+                            'label' => '批量删除',
+                            'action' => 'bulk-delete',
+                            'icon' => 'bi bi-trash',
+                        ],
+                        [
+                            'label' => '批量审核通过',
+                            'action' => 'bulk-approve',
+                            'icon' => 'bi bi-check-lg',
+                        ],
+                        [
+                            'label' => '批量拒绝',
+                            'action' => 'bulk-reject',
+                            'icon' => 'bi bi-x-lg',
+                        ],
+                    ],
+                ],
+            ],
+        ],
     
         'searchKeywordFields' => [
             [

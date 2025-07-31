@@ -44,9 +44,10 @@
                 <div class="col-md-6">
                     <label class="form-label">{{ __('property.property_type') }} *</label>
                     <select name="property_type" class="form-select select-filter" required>
-                        @foreach (['Apartment', 'House', 'Townhouse', 'Condo', 'Basement', 'Other'] as $type)
-                            <option value="{{ $type }}" @selected(old('property_type', $property->property_type ?? '') == $type)>
-                                {{ __('property.property_types.' . $type) }}
+                        <option value="">{{ __('property.select_property_type') }}</option>
+                        @foreach (dict('property_type', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('property_type', $property->property_type ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
@@ -84,9 +85,10 @@
                 <div class="col-md-6">
                     <label class="form-label">{{ __('property.province') }} *</label>
                     <select name="address_province" class="form-select select-filter" required>
-                        @foreach (['AB', 'BC', 'MB', 'NB', 'NL', 'NS', 'ON', 'PE', 'QC', 'SK'] as $province)
-                            <option value="{{ $province }}" @selected(old('address_province', $property->address_province ?? '') == $province)>
-                               {{$province}}
+                        <option value="">{{ __('property.select_province') }}</option>
+                        @foreach (dict('provinces', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('provinces', $property->property_type ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
@@ -173,21 +175,22 @@
             <div class="card-header fw-bold">{{ __('property.amenities') }}</div>
             <div class="card-body row g-3">
                 @foreach ([
-                    'has_gym' => 'has_gym',
-                    'has_pool' => 'has_pool',
-                    'has_balcony' => 'has_balcony',
-                    'has_elevator' => 'has_elevator',
-                    'has_dishwasher' => 'has_dishwasher',
-                    'has_fridge' => 'has_fridge',
-                    'has_stove' => 'has_stove',
-                    'has_microwave' => 'has_microwave',
-                    'has_air_conditioning' => 'has_air_conditioning',
-                ] as $field => $label)
+        'has_gym' => 'has_gym',
+        'has_pool' => 'has_pool',
+        'has_balcony' => 'has_balcony',
+        'has_elevator' => 'has_elevator',
+        'has_dishwasher' => 'has_dishwasher',
+        'has_fridge' => 'has_fridge',
+        'has_stove' => 'has_stove',
+        'has_microwave' => 'has_microwave',
+        'has_air_conditioning' => 'has_air_conditioning',
+    ] as $field => $label)
                     <div class="col-md-3 d-flex align-items-center">
                         <div class="form-check form-switch ms-2">
                             <input type="checkbox" class="form-check-input" name="{{ $field }}"
                                 value="1" id="{{ $field }}" @checked(old($field, $property->amenity->$field ?? false))>
-                            <label class="form-check-label ms-2" for="{{ $field }}">{{ __('property.' . $label) }}</label>
+                            <label class="form-check-label ms-2"
+                                for="{{ $field }}">{{ __('property.' . $label) }}</label>
                         </div>
                     </div>
                 @endforeach
@@ -216,7 +219,8 @@
                 <div class="col-md-4">
                     <label class="form-label">{{ __('property.security_deposit') }}</label>
                     <input type="number" name="security_deposit" class="form-control" step="0.01"
-                        min="0" value="{{ old('security_deposit', $property->rentalInfo->security_deposit ?? '') }}">
+                        min="0"
+                        value="{{ old('security_deposit', $property->rentalInfo->security_deposit ?? '') }}">
                 </div>
 
                 <div class="col-md-4">
@@ -248,7 +252,8 @@
                                 <input type="checkbox" class="form-check-input" name="utilities_included[]"
                                     value="{{ $item }}" id="util_{{ $item }}"
                                     @checked(collect(old('utilities_included', explode(',', $property->rentalInfo->utilities_included ?? '')))->contains($item))>
-                                <label class="form-check-label" for="util_{{ $item }}">{{ __('property.utilities.' . $item) }}</label>
+                                <label class="form-check-label"
+                                    for="util_{{ $item }}">{{ __('property.utilities.' . $item) }}</label>
                             </div>
                         @endforeach
                     </div>
@@ -298,7 +303,8 @@
                     <div class="form-check form-switch ms-2">
                         <input type="checkbox" class="form-check-input" name="hst_included" value="1"
                             id="hst_included" @checked(old('hst_included', $property->financialInfo->hst_included ?? false))>
-                        <label class="form-check-label ms-2" for="hst_included">{{ __('property.hst_included') }}</label>
+                        <label class="form-check-label ms-2"
+                            for="hst_included">{{ __('property.hst_included') }}</label>
                     </div>
                 </div>
             </div>
@@ -328,14 +334,16 @@
                     <div class="form-check form-switch ms-2">
                         <input type="checkbox" class="form-check-input" name="fire_safety_compliance" value="1"
                             id="fire_safety_compliance" @checked(old('fire_safety_compliance', $property->complianceInfo->fire_safety_compliance ?? false))>
-                        <label class="form-check-label" for="fire_safety_compliance">{{ __('property.fire_safety_compliance') }}</label>
+                        <label class="form-check-label"
+                            for="fire_safety_compliance">{{ __('property.fire_safety_compliance') }}</label>
                     </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-center">
                     <div class="form-check form-switch ms-2">
                         <input type="checkbox" class="form-check-input" name="accessibility_compliance"
                             value="1" id="accessibility_compliance" @checked(old('accessibility_compliance', $property->complianceInfo->accessibility_compliance ?? false))>
-                        <label class="form-check-label" for="accessibility_compliance">{{ __('property.accessibility_compliance') }}</label>
+                        <label class="form-check-label"
+                            for="accessibility_compliance">{{ __('property.accessibility_compliance') }}</label>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -371,7 +379,8 @@
             <button type="submit" class="btn btn-primary px-4 py-2 fs-7">
                 {{ isset($property) ? __('property.update_property') : __('property.save_property') }}
             </button>
-            <a href="{{ route('properties.index') }}" class="btn btn-secondary ms-2 px-4 py-2">{{ __('property.cancel') }}</a>
+            <a href="{{ route('properties.index') }}"
+                class="btn btn-secondary ms-2 px-4 py-2">{{ __('property.cancel') }}</a>
         </div>
     </div>
 </form>
@@ -453,7 +462,8 @@
                         toggle.innerHTML = '{{ __('property.set_as_cover') }}';
                         toggle.classList.add('cover-toggle');
                         toggle.onclick = function() {
-                            document.querySelectorAll('.dz-preview').forEach(p => p.classList.remove('cover'));
+                            document.querySelectorAll('.dz-preview').forEach(p => p.classList
+                                .remove('cover'));
                             mock.previewElement.classList.add('cover');
                             coverInput.value = f.name;
                         };

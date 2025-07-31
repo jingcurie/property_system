@@ -16,6 +16,8 @@ return [
     'media_upload' => '房源图片 / 视频上传',
     
     // 基础信息字段
+    'select_property_type' => '请选择房产类型',
+    'select_province' => '选择省份',
     'property_name' => '房源名称',
     'property_type' => '房源类型',
     'ownership_type' => '业权类型',
@@ -145,6 +147,7 @@ return [
     // 页面相关
     'page_title' => '房源管理',
     'create_label' => '房源',
+    'export_label' => '导出',
 
     // 搜索字段
     'search_fields' => [

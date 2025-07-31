@@ -1,5 +1,5 @@
 <?php
-
+//----------------用户文件系统-------------------
 if (!function_exists('formatBytes')) {
     function formatBytes($bytes, $precision = 2)
     {
@@ -45,6 +45,7 @@ if (!function_exists('getIconByType')) {
 }
 
 
+//-----------用于搜索查询-----------------
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
@@ -71,62 +72,6 @@ if (!function_exists('applyKeywordSearch')) {
         return $query;
     }
 }
-
-// if (!function_exists('applyFilters')) {
-//     function applyFilters(Builder $query, Request $request): Builder
-//     {
-//         if (!$request->filled('filters')) return $query;
-
-//         $filters = $request->input('filters', []);
-//         $filterFields = json_decode($request->input('filterFields', '[]'), true) ?? [];
-
-//         foreach ($filters as $id => $filterKey) {
-//             $fieldDef = collect($filterFields)->firstWhere('key', $filterKey);
-//             $value = $request->input("filter_values.$filterKey");
-
-//             if (!$fieldDef || $value === null || $value === '') continue;
-
-//             $type = $fieldDef['type'] ?? 'text';
-//             $column = $fieldDef['column'] ?? $filterKey;
-//             $relation = $fieldDef['relation'] ?? null;
-
-//             switch ($type) {
-//                 case 'select':
-//                     $relation
-//                         ? $query->whereHas($relation, fn($q) => $q->where($column, $value))
-//                         : $query->where($column, $value);
-//                     break;
-
-//                 case 'range':
-//                     $min = $value['min'] ?? null;
-//                     $max = $value['max'] ?? null;
-//                     if ($min !== null && $max !== null) {
-//                         $relation
-//                             ? $query->whereHas($relation, fn($q) => $q->whereBetween($column, [$min, $max]))
-//                             : $query->whereBetween($column, [$min, $max]);
-//                     } elseif ($min !== null) {
-//                         $relation
-//                             ? $query->whereHas($relation, fn($q) => $q->where($column, '>=', $min))
-//                             : $query->where($column, '>=', $min);
-//                     } elseif ($max !== null) {
-//                         $relation
-//                             ? $query->whereHas($relation, fn($q) => $q->where($column, '<=', $max))
-//                             : $query->where($column, '<=', $max);
-//                     }
-//                     break;
-
-//                 case 'text':
-//                 default:
-//                     $relation
-//                         ? $query->whereHas($relation, fn($q) => $q->where($column, 'like', "%$value%"))
-//                         : $query->where($column, 'like', "%$value%");
-//                     break;
-//             }
-//         }
-
-//         return $query;
-//     }
-// }
 
 if (!function_exists('applyFilters')) {
     function applyFilters(Builder $query, Request $request): Builder
@@ -331,4 +276,45 @@ if (!function_exists('applyPagination')) {
     }
 }
 
+//-----------------用于字典--------------------
+if (!function_exists('dict')) {
+    /**
+     * 获取字典选项
+     * 
+     * @param string $groupCode 分组代码
+     * @param string|null $language 语言代码
+     * @return array
+     */
+    function dict(string $groupCode, string $language = null): array
+    {
+        return app(App\Services\DictionaryService::class)->getOptions($groupCode, $language);
+    }
+}
 
+if (!function_exists('dict_label')) {
+    /**
+     * 获取字典标签
+     * 
+     * @param string $groupCode 分组代码  
+     * @param string $value 值
+     * @param string|null $language 语言代码
+     * @return string
+     */
+    function dict_label(string $groupCode, string $value, string $language = null): string
+    {
+        return app(App\Services\DictionaryService::class)->getLabel($groupCode, $value, $language);
+    }
+}
+
+if (!function_exists('dict_colors')) {
+    /**
+     * 获取字典徽章样式映射
+     * 
+     * @param string $groupCode 分组代码
+     * @return array
+     */
+    function dict_colors(string $groupCode): array
+    {
+        return app(App\Services\DictionaryService::class)->getBadgeMap($groupCode);
+    }
+}

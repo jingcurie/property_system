@@ -16,6 +16,8 @@ return [
     'media_upload' => 'Property Images / Video Upload',
     
     // 基础信息字段
+    'select_property_type' => 'Select a property type',
+    'select_province' => 'Select a province',
     'property_name' => 'Property Name',
     'property_type' => 'Property Type',
     'ownership_type' => 'Ownership Type',
@@ -145,6 +147,7 @@ return [
     // 页面相关
     'page_title' => 'Properties',
     'create_label' => 'Property',
+    'export_label' => 'Export',
 
     // 搜索字段
     'search_fields' => [
