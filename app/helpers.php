@@ -77,11 +77,15 @@ if (!function_exists('applyFilters')) {
     function applyFilters(Builder $query, Request $request): Builder
     {
         if (!$request->filled('filters')) return $query;
-
         $filters = $request->input('filters', []);
         $filterFields = json_decode($request->input('filterFields', '[]'), true) ?? [];
 
         foreach ($filters as $id => $filterKey) {
+            // 跳过 module，因为它不是字段，在回收站时快筛选择是模块，不是字段
+            if ($filterKey === 'module') {
+                continue;
+            }
+
             $fieldDef = collect($filterFields)->firstWhere('key', $filterKey);
             $value = $request->input("filter_values.$filterKey");
 
@@ -109,7 +113,7 @@ if (!function_exists('applyFilters')) {
                     }
                     break;
 
-                case 'range':
+                case 'number_range':
                     $min = $value['min'] ?? null;
                     $max = $value['max'] ?? null;
                     if ($min !== null && $max !== null) {
@@ -126,6 +130,36 @@ if (!function_exists('applyFilters')) {
                             : $query->where($column, '<=', $max);
                     }
                     break;
+
+                case 'date_range':
+                    $date_from = $value['start'] ?? null;
+                    $date_to   = $value['end'] ?? null;
+
+                    if ($date_from) {
+                        $date_from = \Carbon\Carbon::parse($date_from)->startOfDay(); //从一天最开始开始，包括00:00:00
+                    }
+                    if ($date_to) {
+                        $date_to = \Carbon\Carbon::parse($date_to)->endOfDay();
+                    }
+
+                    if ($date_from !== null && $date_to !== null) {
+                        $callback = fn($q) => $q->whereBetween($column, [$date_from, $date_to]);
+                        $relation
+                            ? $query->whereHas($relation, $callback)
+                            : $query->whereBetween($column, [$date_from, $date_to]);
+                    } elseif ($date_from !== null) {
+                        $callback = fn($q) => $q->where($column, '>=', $date_from);
+                        $relation
+                            ? $query->whereHas($relation, $callback)
+                            : $query->where($column, '>=', $date_from);
+                    } elseif ($date_to !== null) {
+                        $callback = fn($q) => $q->where($column, '<=', $date_to);
+                        $relation
+                            ? $query->whereHas($relation, $callback)
+                            : $query->where($column, '<=', $date_to);
+                    }
+                    break;
+
 
                 case 'text':
                 default:
@@ -147,7 +181,8 @@ if (!function_exists('applySorting')) {
     /**
      * 通用排序方法 - 支持多表关联
      */
-    function applySorting($query, $request) {
+    function applySorting($query, $request)
+    {
         $sort = $request->input('sort');
         $direction = $request->input('direction', 'asc');
         $sortableFields = collect(json_decode($request->input('sortableFields', '{}'), true));
@@ -174,10 +209,11 @@ if (!function_exists('applyRelationSorting')) {
     /**
      * 关联表排序 - 支持任意深度的关联
      */
-    function applyRelationSorting($query, $relationPath, $column, $direction) {
+    function applyRelationSorting($query, $relationPath, $column, $direction)
+    {
         // 构建子查询
         $subQuery = buildRelationSubQuery($query, $relationPath, $column);
-        
+
         return $query->orderBy($subQuery, $direction);
     }
 }
@@ -186,28 +222,29 @@ if (!function_exists('buildRelationSubQuery')) {
     /**
      * 构建关联子查询
      */
-    function buildRelationSubQuery($query, $relationPath, $column) {
+    function buildRelationSubQuery($query, $relationPath, $column)
+    {
         $model = $query->getModel();
         $mainTable = $model->getTable();
         $primaryKey = $model->getKeyName();
-        
+
         // 分解关联路径：ownership.owner.profile
         $relations = explode('.', $relationPath);
-        
+
         // 从主模型开始，逐步构建关联链
         $currentModel = $model;
         $joins = [];
         $currentTable = $mainTable;
-        
+
         foreach ($relations as $relationName) {
             // 获取关联实例
             $relationInstance = $currentModel->$relationName();
             $relatedModel = $relationInstance->getRelated();
             $relatedTable = $relatedModel->getTable();
-            
+
             // 根据关联类型获取正确的键名
             $foreignKey = $relationInstance->getForeignKeyName();
-            
+
             // 根据关联类型获取本地键名
             if (method_exists($relationInstance, 'getOwnerKeyName')) {
                 // BelongsTo 关联
@@ -222,7 +259,7 @@ if (!function_exists('buildRelationSubQuery')) {
                 // 默认使用主键
                 $ownerKey = $currentModel->getKeyName();
             }
-            
+
             // 构建JOIN信息
             $joins[] = [
                 'table' => $relatedTable,
@@ -230,21 +267,21 @@ if (!function_exists('buildRelationSubQuery')) {
                 'owner_key' => $ownerKey,
                 'current_table' => $currentTable,
             ];
-            
+
             // 为下一次循环准备
             $currentModel = $relatedModel;
             $currentTable = $relatedTable;
         }
-        
+
         // 构建子查询
         $firstJoin = $joins[0];
         $subQuery = \DB::table($firstJoin['table']);
-        
+
         // 逐步添加JOIN
         for ($i = 1; $i < count($joins); $i++) {
             $prevJoin = $joins[$i - 1];
             $currentJoin = $joins[$i];
-            
+
             $subQuery->join(
                 $currentJoin['table'],
                 $prevJoin['table'] . '.' . $prevJoin['owner_key'],
@@ -252,24 +289,24 @@ if (!function_exists('buildRelationSubQuery')) {
                 $currentJoin['table'] . '.' . $currentJoin['foreign_key']
             );
         }
-        
+
         // 选择最终字段并添加WHERE条件
         $finalTable = end($joins)['table'];
-        
+
         // 修复whereColumn的用法 - 传两个参数
         $subQuery->select("$finalTable.$column")
-                 ->whereColumn(
-                     $firstJoin['table'] . '.' . $firstJoin['foreign_key'],
-                     "$mainTable.$primaryKey"
-                 )
-                 ->limit(1);
-        
+            ->whereColumn(
+                $firstJoin['table'] . '.' . $firstJoin['foreign_key'],
+                "$mainTable.$primaryKey"
+            )
+            ->limit(1);
+
         return $subQuery;
     }
 }
 
 if (!function_exists('applyPagination')) {
-    function applyPagination(Builder $query, Request $request, int $defaultPerPage = 20)
+    function applyPagination(Builder $query, Request $request, int $defaultPerPage = 1000)
     {
         $perPage = $request->input('per_page', $defaultPerPage);
         return $query->paginate($perPage)->appends($request->all());

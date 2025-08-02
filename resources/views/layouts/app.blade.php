@@ -266,7 +266,7 @@
 
                 {{-- Trash --}}
                 <li class="nav-item {{ request()->routeIs('trash.*') ? 'active' : '' }}">
-                    <a href="#" class="nav-link" onclick="handleMainMenuClick(this)">
+                    <a href="{{ route('trash.index') }}" class="nav-link {{ request()->routeIs('trash.*') ? 'active' : '' }}" onclick="handleMainMenuClick(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-trash3"></i>
                             <span>{{ __('menu.trash') }}</span>
@@ -356,7 +356,7 @@
                             <i class="bi bi-bell fs-6" style="transform: translate(50%, 0%) !important;"></i>
                             <span id="notification_amount"
                                 class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill"
-                                style="transform: translate(-50%, -25%) !important; padding:0.2rem 0.4rem; font-size:0.9rem !important">2</span>
+                                style="transform: translate(-50%, -25%) !important; padding:0.2rem 0.4rem; font-size:0.9rem !important"></span>
                         </button>
                     </div>
 
@@ -415,19 +415,23 @@
                 </div>
             </nav>
 
-            <div class="">
+            <div id="alert-container" class="alerts-wrapper mx-3 m-3">
                 @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        {{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center py-2 px-3"
+                        role="alert">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <div class="flex-grow-1">{{ session('success') }}</div>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"
                             aria-label="{{ __('layout.close') }}"></button>
                     </div>
                 @endif
 
                 @if (session('error'))
-                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                        {{ session('error') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert"
+                    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center py-2 px-3"
+                        role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <div class="flex-grow-1">{{ session('error') }}</div>
+                        <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"
                             aria-label="{{ __('layout.close') }}"></button>
                     </div>
                 @endif
@@ -443,24 +447,24 @@
         </div>
     </div>
 
-    <!-- 通知弹窗 -->
+    {{-- // 修改你的通知弹窗HTML --}}
     <div class="notification-popup shadow" id="notificationPopup">
         <div
             class="notification-header d-flex justify-content-between align-items-center bg-primary text-white px-3 py-2 rounded-top">
             <h6 class="mb-0">{{ __('layout.notification_center') }}</h6>
-            <button class="btn btn-sm btn-close-white" onclick="toggleNotifications()"></button>
+            <div>
+                <button class="btn btn-sm btn-outline-light me-2" onclick="markAllAsRead()">全部已读</button>
+                <button class="btn btn-sm btn-close-white" onclick="toggleNotifications()"></button>
+            </div>
         </div>
         <div class="notification-list px-3 py-2" style="max-height: 400px; overflow-y: auto;">
             <!-- 动态内容插入这里 -->
         </div>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        let notificationVisible = false;
-
         // 页面加载时恢复状态
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM loaded, restoring states...'); // 调试用
@@ -753,175 +757,24 @@
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
-        // 成功提示
-        function showSuccess(message = '{{ __('layout.operation_success') }}') {
-            Swal.fire({
-                icon: 'success',
-                title: '{{ __('layout.success') }}',
-                text: message,
-                timer: 1800,
-                showConfirmButton: false
-            });
-        }
-
-        // 错误提示
-        function showError(message = '{{ __('layout.operation_failed') }}') {
-            Swal.fire({
-                icon: 'error',
-                title: '{{ __('layout.error') }}',
-                text: message,
-            });
-        }
-
-        // 警告提示
-        function showWarning(message = '{{ __('layout.warning_message') }}') {
-            Swal.fire({
-                icon: 'warning',
-                title: '{{ __('layout.warning') }}',
-                text: message,
-            });
-        }
-
-        // 确认框（带回调）
-        function showConfirm(message = '{{ __('layout.confirm_operation') }}', callback) {
-            Swal.fire({
-                icon: 'question',
-                title: '{{ __('layout.confirm_title') }}',
-                text: message,
-                showCancelButton: true,
-                confirmButtonText: '{{ __('layout.confirm') }}',
-                cancelButtonText: '{{ __('layout.cancel') }}'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    callback();
-                }
-            });
-        }
-
-        // 通用提示方法
-        function showAlert(type, title, text, callback) {
-            Swal.fire({
-                icon: type, // success, error, warning, info, question
-                title: title || '',
-                text: text || '',
-                confirmButtonText: '确定',
-            }).then((result) => {
-                if (callback && typeof callback === 'function') {
-                    callback(result);
-                }
-            });
-        }
+     <script>
+        window.APP_TEXTS = {
+            successTitle: '{{ __('layout.success') }}',
+            successMessage: '{{ __('layout.operation_success') }}',
+            errorTitle: '{{ __('layout.error') }}',
+            errorMessage: '{{ __('layout.operation_failed') }}',
+            confirmTitle: '{{ __('layout.confirm_title') }}',
+            confirmMessage: '{{ __('layout.confirm_operation') }}',
+            confirm: '{{ __('layout.confirm') }}',
+            cancel: '{{ __('layout.cancel') }}'
+        };
     </script>
 
 
-
-    <script>
-        // //notification
-        // setInterval(() => {
-        //     fetch("/notifications/generate", {
-        //         method: "POST",
-        //         headers: {
-        //             "X-CSRF-TOKEN": '{{ csrf_token() }}',
-        //             "Content-Type": "application/json"
-        //         }
-        //     });
-        // }, 30000); // 每 30 秒请求一次
-
-
-
-        function fetchNotifications() {
-            fetch("/notifications/unread")
-                .then(res => res.json())
-                .then(data => {
-                    const badge = document.getElementById('notification_amount');
-                    badge.innerText = data.count;
-                    badge.style.display = data.count > 0 ? 'inline-block' : 'none';
-
-                    const popup = document.getElementById('notificationPopup');
-                    const list = popup.querySelector('.notification-list');
-                    list.innerHTML = '';
-
-                    data.notifications.forEach(item => {
-                        const notifEl = document.createElement('div');
-                        notifEl.className = 'notification-item' + (item.is_read == 0 ? ' unread' : '');
-
-                        notifEl.innerHTML = `
-                    <div class="d-flex align-items-start gap-2">
-                        <i class="bi ${item.icon} text-${item.color} mt-1"></i>
-                        <div class="flex-grow-1">
-                            <div class="fw-medium">${item.title}</div>
-                            <div class="text-muted small">${item.content}</div>
-                        </div>
-                    </div>`;
-                        list.appendChild(notifEl);
-                    });
-                });
-        }
-
-        //初始执行一次，并每 30 秒刷新一次
-        fetchNotifications();
-        // setInterval(fetchNotifications, 30000);
-    </script>
-
-    <script>
-        function showToast(message, type = 'info') {
-            let container = document.getElementById('toast-container');
-            if (!container) {
-                container = document.createElement('div');
-                container.id = 'toast-container';
-                document.body.appendChild(container);
-            }
-
-            const icons = {
-                success: 'bi-check-circle-fill',
-                info: 'bi-info-circle-fill',
-                warning: 'bi-exclamation-triangle-fill',
-                danger: 'bi-x-circle-fill'
-            };
-
-            const iconClass = icons[type] || icons.info;
-
-            const toast = document.createElement('div');
-            toast.className = `custom-toast text-bg-${type} border-0 rounded p-2`;
-            toast.setAttribute('role', 'alert');
-            toast.setAttribute('aria-live', 'assertive');
-            toast.setAttribute('aria-atomic', 'true');
-
-            toast.innerHTML = `
-        <div class="d-flex align-items-center">
-            <i class="bi ${iconClass} toast-icon"></i>
-            <div class="toast-body flex-grow-1">${message}</div>
-            <button type="button" class="btn-close btn-close-white ms-2" aria-label="Close"></button>
-        </div>
-    `;
-
-            container.appendChild(toast);
-
-            // 触发显示动画
-            requestAnimationFrame(() => toast.classList.add('show'));
-
-            toast.querySelector('.btn-close').addEventListener('click', () => hideToast(toast));
-
-            setTimeout(() => hideToast(toast), 3000);
-        }
-
-        function hideToast(toast) {
-            toast.classList.remove('show');
-            toast.classList.add('hide');
-            toast.addEventListener('transitionend', () => toast.remove(), {
-                once: true
-            });
-        }
-
-
-
-        showToast('操作成功', 'success');
-        showToast('警告提示：这个内容不对啊', 'warning');
-        showToast('信息提示', 'info');
-        showToast('错误提示', 'danger');
-    </script>
-
+    <script src="{{ asset('js/toast.js') }}"></script>
+    <script src="{{ asset('js/noticification.js') }}"></script>
+    <script src="{{ asset('js/alert.js') }}"></script>
+   
     @stack('scripts')
 
 </body>

@@ -388,15 +388,38 @@ class PropertyController extends Controller
     /**
      * 软删除
      */
+    // public function destroy($propertyId)
+    // {
+    //     $property = Property::findOrFail($propertyId);
+    //     $property->update([
+    //         'deleted_at' => now(),
+    //         'deleted_by' => Auth::id(),
+    //     ]);
+
+    //     return redirect()->route('properties.index')->with('success', '房源已删除');
+    // }
+
     public function destroy($propertyId)
     {
-        $property = Property::findOrFail($propertyId);
+        $property = Property::find($propertyId);
+
+        if (!$property) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => '该房源不存在',
+            ], 404);
+        }
+
+        $property->delete();
+
         $property->update([
-            'deleted_at' => now(),
             'deleted_by' => Auth::id(),
         ]);
 
-        return redirect()->route('properties.index')->with('success', '房源已删除');
+        return response()->json([
+            'status'  => 'success',
+            'message' => '该房源已删除',
+        ]);
     }
 
     public function export(Request $request)
@@ -538,23 +561,35 @@ class PropertyController extends Controller
         ));
     }
 
-
-
     public function batchDelete(Request $request)
     {
         $ids = $request->input('selected_ids', []);
 
         if (! is_array($ids) || count($ids) === 0) {
-            return back()->with('error', '请选择要删除的房源');
+            return response()->json([
+                'success' => false,
+                'message' => '请选择要删除的房源',
+            ], 400);
         }
 
-        $count = Property::whereIn('property_id', $ids)->update([
-            'deleted_at' => now(),
-            'deleted_by' => Auth::id(),
-        ]);
+        //注意这里其他模块要改id名称，class名称
+        $properties = Property::whereIn('property_id', $ids)->get();
+        foreach ($properties as $property) { //为了记录删除记录，不得已用for没办法用whereIn
+            $property->delete();
+            $property->update([
+                'deleted_by' => Auth::id(),
+            ]);
+        }
 
-        return redirect()->route('properties.index')->with('success', "成功删除 {$count} 个房源");
+        $count = $properties->count();
+
+        return response()->json([
+            'success' => true,
+            'message' => "成功删除 {$count} 个房源",
+            'deleted_count' => $count,
+        ]);
     }
+
 
     // PropertyController.php
     public function addOwner(Request $request, Property $property)

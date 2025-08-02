@@ -82,8 +82,13 @@ class Tenant extends Model
     public function leases()
     {
         return $this->belongsToMany(Lease::class, 'lease_tenant', 'tenant_id', 'lease_id')
-                    ->withPivot('is_primary', 'share_percentage', 'deleted_at', 'deleted_by')
-                    ->withTimestamps()
-                    ->wherePivotNull('deleted_at');
+            ->withPivot('is_primary', 'share_percentage', 'deleted_at', 'deleted_by')
+            ->withTimestamps()
+            ->wherePivotNull('deleted_at');
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by', 'id');
     }
 }

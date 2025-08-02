@@ -24,6 +24,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FileManagerController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DocuSignWebhookController;
+use App\Http\Controllers\TrashController;
 
 use App\Http\Controllers\DictController;
 
@@ -212,16 +213,11 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('applicants', ApplicantController::class);
 
     //notification
-
-    // Route::get('/notifications/unread-count', function (Request $request) {
-    //     $count = Notification::where('user_id', $request->user()->id)
-    //                         ->where('is_read', false)
-    //                         ->count();
-    //     return response()->json(['count' => $count]);
-    // });
-
     Route::post('/notifications/generate', [NotificationController::class, 'generate']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
+    Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::put('/notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::delete('/notifications/{id}', [NotificationController::class, 'delete']);
 
     //docusign
     Route::get('/test-docusign', function () {
@@ -268,4 +264,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('dict/items/{item}', [DictController::class, 'updateItem'])->name('dict.items.update');
     Route::delete('dict/items/{item}', [DictController::class, 'destroyItem'])->name('dict.items.destroy');
     Route::post('dict/items/sort', [DictController::class, 'updateSort'])->name('dict.items.sort');
+
+    //回收站
+    Route::prefix('trash')->name('trash.')->group(function () {
+        Route::get('/', [TrashController::class, 'index'])->name('index');
+        Route::post('/{module}/{id}/restore', [TrashController::class, 'restore'])->name('restore');
+        Route::post('/{module}/{id}/force-delete', [TrashController::class, 'forceDelete'])->name('forceDelete');
+        Route::post('/{module}/bulk-restore', [TrashController::class, 'bulkRestore']);
+        Route::post('/{module}/bulk-force-delete', [TrashController::class, 'bulkForceDelete']);
+        Route::get('/{module}/clear', [TrashController::class, 'clear'])->name('clear');
+    });
 });

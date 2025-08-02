@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeleted;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * @property int $id
@@ -58,6 +60,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class RentalApplication extends Model
 {
+    use SoftDeletes;
     // protected $fillable = [
     //     'property_id', 'application_code', 'status', 'submitted_at', 'reviewed_by',
     //     'reviewed_at', 'notes', 'fair_housing_acknowledged', 'risk_score',
@@ -113,5 +116,10 @@ class RentalApplication extends Model
     public function files()
     {
         return $this->morphMany(File::class, 'fileable');
+    }
+
+     public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by', 'id');
     }
 }

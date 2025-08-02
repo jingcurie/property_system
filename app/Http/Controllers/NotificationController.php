@@ -64,7 +64,12 @@ class NotificationController extends Controller
 
     public function getUnread()
     {
-        $userId = Auth::id() ?? 1;
+        // 确保用户已登录
+        if (!Auth::check()) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $userId = Auth::id();
 
         // 通知类型映射（你可以继续调整样式）
         $typeMap = [
@@ -77,10 +82,14 @@ class NotificationController extends Controller
             'custom'   => ['icon' => 'bi-bell-fill',          'color' => 'dark'],
         ];
 
+
+        // 添加分页和限制
         $notifications = Notification::where('user_id', $userId)
             ->where('is_read', 0)
             ->orderBy('created_at', 'desc')
+            ->limit(10)  // 只返回最新10条
             ->get();
+
 
         // 加上图标和颜色信息
         $notifications = $notifications->map(function ($item) use ($typeMap) {
@@ -98,8 +107,40 @@ class NotificationController extends Controller
         });
 
         return response()->json([
-            'count' => $notifications->count(),
-            'notifications' => $notifications,
+            'count' => Notification::where('user_id', $userId)->where('is_read', 0)->count(),
+            'notifications' => $notifications  // 直接返回，不要再map
         ]);
+    }
+
+    // 标记单个通知为已读
+    public function markAsRead($id)
+    {
+        $notification = Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->firstOrFail();
+
+        $notification->update(['is_read' => 1]);
+
+        return response()->json(['success' => true]);
+    }
+
+    // 标记所有通知为已读
+    public function markAllAsRead()
+    {
+        Notification::where('user_id', Auth::id())
+            ->where('is_read', 0)
+            ->update(['is_read' => 1]);
+
+        return response()->json(['success' => true]);
+    }
+
+    // 删除通知
+    public function delete($id)
+    {
+        Notification::where('id', $id)
+            ->where('user_id', Auth::id())
+            ->delete();
+
+        return response()->json(['success' => true]);
     }
 }

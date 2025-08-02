@@ -32,7 +32,6 @@ class Owner extends Model
     public function getFullNameAttribute()
     {
         return $this->first_name . ' ' . $this->last_name;
-        
     }
 
     public function properties()
@@ -50,5 +49,10 @@ class Owner extends Model
     public function scopeActive($query)
     {
         return $query->where('is_active', 1);
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by', 'id');
     }
 }

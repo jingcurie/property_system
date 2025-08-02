@@ -2978,9 +2978,13 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon $updated_at
      * @property \Illuminate\Support\Carbon $created_at
+     * @property string|null $expires_at
      * @property bool|null $is_read
+     * @property string|null $action_url
+     * @property string|null $data
      * @property string $content
      * @property string $title
+     * @property bool $priority
      * @property string $type
      * @property mixed $user_id
      * @property mixed $notification_id
@@ -2988,9 +2992,13 @@ namespace App\Models {
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereNotificationId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereUserId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereType($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification wherePriority($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereTitle($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereContent($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereData($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereActionUrl($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereIsRead($value)
+     * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereExpiresAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereCreatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereUpdatedAt($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification newModelQuery()
@@ -3311,6 +3319,7 @@ namespace App\Models {
      * @property-read int|null $properties_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PropertyOwnership> $ownerships
      * @property-read int|null $ownerships_count
+     * @property-read \App\Models\User $deletedBy
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereOwnerId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Owner>|Owner whereLastName($value)
@@ -3661,6 +3670,9 @@ namespace App\Models {
      * @property-read int|null $ownerships_count
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Lease> $leases
      * @property-read int|null $leases_count
+     * @property-read \App\Models\User $deletedBy
+     * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Activitylog\Models\Activity> $activities
+     * @property-read int|null $activities_count
      * @method static \Illuminate\Database\Eloquent\Builder<Property>|Property wherePropertyId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Property>|Property wherePropertyCode($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Property>|Property wherePropertyName($value)
@@ -5269,7 +5281,7 @@ namespace App\Models {
      * App\Models\RentalApplication
      *
      * @property mixed $deleted_by
-     * @property string|null $deleted_at
+     * @property \Illuminate\Support\Carbon|null $deleted_at
      * @property \Illuminate\Support\Carbon|null $updated_at
      * @property \Illuminate\Support\Carbon|null $created_at
      * @property string|null $last_accessed_at
@@ -5294,6 +5306,7 @@ namespace App\Models {
      * @property-read \App\Models\EmploymentDetail $employment
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\File> $files
      * @property-read int|null $files_count
+     * @property-read \App\Models\User $deletedBy
      * @method static \Illuminate\Database\Eloquent\Builder<RentalApplication>|RentalApplication whereId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RentalApplication>|RentalApplication wherePropertyId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<RentalApplication>|RentalApplication whereApplicationCode($value)
@@ -6269,6 +6282,7 @@ namespace App\Models {
      * @property-read mixed $name
      * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Lease> $leases
      * @property-read int|null $leases_count
+     * @property-read \App\Models\User $deletedBy
      * @method static \Illuminate\Database\Eloquent\Builder<Tenant>|Tenant whereTenantId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Tenant>|Tenant whereFirstName($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Tenant>|Tenant whereLastName($value)

@@ -316,7 +316,7 @@
             [
                 'key' => 'rent',
                 'label' => __('property.filters.monthly_rent'),
-                'type' => 'range',
+                'type' => 'number_range',
                 'relation' => 'rentalInfo',
                 'column' => 'monthly_rent',
             ],
@@ -428,11 +428,11 @@
                         })->implode(' / ');
     
                     return '<div class="d-flex align-items-center">
-                                        <i class="bi bi-person-badge me-2 text-secondary"></i>
-                                        <span>' .
+                                            <i class="bi bi-person-badge me-2 text-secondary"></i>
+                                            <span>' .
                         $owners .
                         '</span>
-                                    </div>';
+                                        </div>';
                 },
             ],
         ],
@@ -453,9 +453,9 @@
                 'url' => fn($item) => 'javascript:void(0);',
                 'icon' => 'bi bi-trash',
                 'class' => 'text-danger',
-                'onclick' => fn($item) => "submitDelete('" .
+                'onclick' => fn($item) => "deleteCurrentRecord('" .
                     route('properties.destroy', $item->property_id) .
-                    "')",
+                    "', {$item->property_id})",
             ],
         ],
     

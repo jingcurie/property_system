@@ -517,7 +517,7 @@
                 $('#itemCode').val(item.code);
                 $('#itemValue').val(item.value);
                 $('#itemSort').val(item.sort_order);
-                $('#itemActive').prop('checked', item.is_active); // 修复：去掉多余的语法
+                $('#itemActive').prop('checked', item.is_active) ? 1 : 0; // 修复：去掉多余的语法
 
                 // 填充翻译字段
                 @foreach ($languages as $code => $name)

@@ -126,12 +126,12 @@ class DictController extends Controller
      */
     public function destroyGroup(DictGroup $group): JsonResponse
     {
-        // if ($group->items()->count() > 0) {
-        //     return response()->json([
-        //         'success' => false,
-        //         'message' => '该分组下还有字典项，无法删除'
-        //     ], 400);
-        // }
+        if ($group->items()->count() > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => '该分组下还有字典项，无法删除'
+            ], 400);
+        }
 
         $groupCode = $group->code;
         $group->delete();
@@ -172,6 +172,9 @@ class DictController extends Controller
         $sortOrder = $request->sort_order;
         if (empty($sortOrder) || $sortOrder == 0) {
             $sortOrder = $this->getNextSortOrder($request->group_id);
+        } else {
+            // 如果指定了序号，需要处理序号冲突
+            $this->handleSortOrderConflict($request->group_id, $sortOrder);
         }
 
         $item = DictItem::create([
@@ -230,10 +233,17 @@ class DictController extends Controller
             ], 400);
         }
 
+        $newSortOrder = $request->sort_order ?: $item->sort_order;
+        
+        // 如果序号发生变化，需要处理冲突
+        if ($newSortOrder != $item->sort_order) {
+            $this->handleSortOrderConflictForUpdate($group->id, $newSortOrder, $item->id);
+        }
+
         $item->update([
             'code' => $request->code,
             'value' => $request->value,
-            'sort_order' => $request->sort_order,
+            'sort_order' => $newSortOrder,
             'is_active' => $request->boolean('is_active'),
         ]);
 
@@ -271,12 +281,19 @@ class DictController extends Controller
     public function destroyItem(DictItem $item): JsonResponse
     {
         $groupCode = $item->group->code;
+        $groupId = $item->group_id;
+        $deletedSortOrder = $item->sort_order;
         
         // 删除翻译
         $item->translations()->delete();
         
         // 删除字典项
         $item->delete();
+
+        // 将删除项之后的所有项目序号-1，保持连续
+        DictItem::where('group_id', $groupId)
+            ->where('sort_order', '>', $deletedSortOrder)
+            ->decrement('sort_order');
 
         // 清除缓存
         $this->dictionaryService->clearCache($groupCode);
@@ -303,7 +320,7 @@ class DictController extends Controller
         foreach ($request->items as $sortOrder => $itemId) {
             DictItem::where('id', $itemId)
                 ->where('group_id', $group->id)
-                ->update(['sort_order' => $sortOrder + 1]);
+                ->update(['sort_order' => $sortOrder + 1]); // 从1开始的连续序号
         }
 
         // 清除缓存
@@ -321,5 +338,28 @@ class DictController extends Controller
     private function getNextSortOrder(int $groupId): int
     {
         return DictItem::where('group_id', $groupId)->max('sort_order') + 1;
+    }
+
+    /**
+     * 处理新增时的序号冲突
+     */
+    private function handleSortOrderConflict(int $groupId, int $sortOrder): void
+    {
+        // 将指定序号及之后的所有项目序号+1
+        DictItem::where('group_id', $groupId)
+            ->where('sort_order', '>=', $sortOrder)
+            ->increment('sort_order');
+    }
+
+    /**
+     * 处理更新时的序号冲突
+     */
+    private function handleSortOrderConflictForUpdate(int $groupId, int $newSortOrder, int $currentItemId): void
+    {
+        // 将指定序号及之后的所有项目序号+1（排除当前项目）
+        DictItem::where('group_id', $groupId)
+            ->where('sort_order', '>=', $newSortOrder)
+            ->where('id', '!=', $currentItemId)
+            ->increment('sort_order');
     }
 }
