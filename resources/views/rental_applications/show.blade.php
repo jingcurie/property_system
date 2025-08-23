@@ -2,7 +2,17 @@
 
 @section('content')
     <div class="container">
-        <h2 class="mb-4"><i class="bi bi-card-checklist me-1"></i> 查看租赁申请</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="fw-bold text-dark"><i class="bi bi-card-checklist me-1"></i> 查看租赁申请</h2>
+            <div>
+                <a href="{{ route('rental_applications.edit', $rentalApplication) }}" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-pencil-square me-1"></i> 编辑
+                </a>
+                <a href="{{ route('rental_applications.index') }}" class="btn btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> 返回列表
+                </a>
+            </div>
+        </div>
 
         <div class="card mb-4">
             <div class="card-header fw-bold">申请信息</div>
@@ -70,8 +80,5 @@
             'fileable_id' => $rentalApplication?->id ?? 0,
             'attachments' => $attachments,
         ])
-
-
-        <a href="{{ route('rental_applications.index') }}" class="btn btn-secondary">返回列表</a>
     </div>
 @endsection

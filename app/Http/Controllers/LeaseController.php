@@ -284,7 +284,7 @@ class LeaseController extends Controller
     // }
     public function sendDocusign($id)
     {
-        $lease = Lease::with('tenants')->findOrFail($id);
+        $lease = Lease::with(['tenants', 'property.owners'])->findOrFail($id);
 
         // 获取合同 PDF 文件（category 应为 'leases'）
         $contractFile = $lease->files()->where('category', 'contract')->latest()->first();
@@ -295,18 +295,37 @@ class LeaseController extends Controller
                 : redirect()->back()->with('error', '找不到合同文件');
         }
         
-
         $pdfPath = storage_path('app/public/' . $contractFile->path);
 
-        // 准备签署人信息（多个租客）
-        $signers = $lease->tenants->map(function ($tenant, $index) {
-            return [
-                'name' => $tenant->first_name . ' ' . $tenant->last_name,
-                'email' => $tenant->email,
-                'recipient_id' => $index + 1,   // recipientId 必须唯一
-                'routing_order' => $index + 1,  // 控制签署顺序（也可都设为 1）
-            ];
-        })->toArray();
+        // 从请求中获取签署人列表，如果没有则使用默认的租客列表
+        $signers = request()->input('signers', []);
+        
+        if (empty($signers)) {
+            // 默认签署人：租客 + 业主
+            $signers = [];
+            
+            // 添加租客
+            foreach ($lease->tenants as $index => $tenant) {
+                $signers[] = [
+                    'name' => $tenant->first_name . ' ' . $tenant->last_name,
+                    'email' => $tenant->email,
+                    'type' => 'tenant',
+                    'recipient_id' => count($signers) + 1,
+                    'routing_order' => count($signers) + 1,
+                ];
+            }
+            
+            // 添加业主
+            foreach ($lease->property->owners as $index => $owner) {
+                $signers[] = [
+                    'name' => $owner->first_name . ' ' . $owner->last_name,
+                    'email' => $owner->email,
+                    'type' => 'owner',
+                    'recipient_id' => count($signers) + 1,
+                    'routing_order' => count($signers) + 1,
+                ];
+            }
+        }
 
         // 调用服务
         $docusign = new \App\Services\DocuSignService();
@@ -324,9 +343,9 @@ class LeaseController extends Controller
                     'success' => true,
                     'envelope_id' => $result['envelope_id'],
                     'status' => $result['status'],
-                    'message' => '合同已发送所有租户签署'
+                    'message' => '合同已发送给所有签署人'
                 ])
-                : redirect()->back()->with('success', '合同已发送所有租户签署');
+                : redirect()->back()->with('success', '合同已发送给所有签署人');
         } else {
             return request()->expectsJson()
                 ? response()->json(['success' => false, 'message' => '发送失败：' . $result['error']])
@@ -334,6 +353,40 @@ class LeaseController extends Controller
         }
     }
 
+    /**
+     * 获取租赁合同的签署人列表
+     */
+    public function getSigners($id)
+    {
+        $lease = Lease::with(['tenants', 'property.owners'])->findOrFail($id);
+        
+        $signers = [];
+        
+        // 添加租客
+        foreach ($lease->tenants as $tenant) {
+            $signers[] = [
+                'name' => $tenant->first_name . ' ' . $tenant->last_name,
+                'email' => $tenant->email,
+                'type' => 'tenant',
+                'checked' => true, // 默认选中
+            ];
+        }
+        
+        // 添加业主
+        foreach ($lease->property->owners as $owner) {
+            $signers[] = [
+                'name' => $owner->first_name . ' ' . $owner->last_name,
+                'email' => $owner->email,
+                'type' => 'owner',
+                'checked' => true, // 默认选中
+            ];
+        }
+        
+        return response()->json([
+            'success' => true,
+            'signers' => $signers
+        ]);
+    }
 
 
 

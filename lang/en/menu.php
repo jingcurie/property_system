@@ -22,7 +22,11 @@ return [
     // 租赁业务子菜单
     'applications' => 'Applications',
     'applicants' => 'Applicants',
-    'leasing_contracts' => 'Leasing Contracts',
+    'draft_leases'         => 'Draft Leases',
+    'lease_renewals'       => 'Lease Renewals',
+    'active_leases'        => 'Active Leases',
+    'terminated_leases'    => 'Terminated Leases',
+    'esignature_documents' => 'eSignature Documents',
 
     // 维护管理子菜单
     'work_orders' => 'Work Orders',

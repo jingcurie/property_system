@@ -20,14 +20,14 @@
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-plus-circle',
-                    'label' => __('property.create_label'),
+                    'label' => ut('modules.applicant.create_label'),
                     'url' => route('applicants.create'),
                     'class' => 'btn btn-primary',
                 ],
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-download',
-                    'label' => __('property.export_label'),
+                    'label' => ut('modules.applicant.export_label'),
                     'url' => "",
                     'class' => 'btn btn-outline-secondary',
                 ],

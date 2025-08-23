@@ -22,7 +22,12 @@ return [
     // 租赁业务子菜单
     'applications' => '申请管理',
     'applicants' => '申请人管理',
-    'leasing_contracts' => '租赁合同',
+    'draft_leases'         => '租约草稿',
+    'lease_renewals'       => '租约续签',
+    'active_leases'        => '生效租约',
+    'terminated_leases'    => '已终止租约',
+    'applications'         => '租赁申请',
+    'esignature_documents' => '电子签署文件',
 
     // 维护管理子菜单
     'work_orders' => '工单管理',

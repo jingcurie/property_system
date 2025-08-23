@@ -93,6 +93,34 @@ class DictionaryService
                     'Under Maintenance' => 'warning',
                     'Pending Lease' => 'info'
                 ],
+                'property_type' => [
+                    'Apartment' => 'primary',
+                    'House' => 'success',
+                    'Townhouse' => 'info',
+                    'Basement' => 'secondary',
+                    'Condo' => 'warning',
+                    'Other' => 'dark'
+                ],
+                'ownership_type' => [
+                    'Owned' => 'success',
+                    'Managed' => 'info'
+                ],
+                'parking_type' => [
+                    'Indoor' => 'primary',
+                    'Outdoor' => 'success',
+                    'Garage' => 'info',
+                    'None' => 'secondary'
+                ],
+                'lease_term_type' => [
+                    'Monthly' => 'primary',
+                    'Fixed Term' => 'success',
+                    'Annual' => 'info'
+                ],
+                'pet_policy' => [
+                    'Allowed' => 'success',
+                    'Restricted' => 'warning',
+                    'Not Allowed' => 'danger'
+                ],
                 'payment_status' => [
                     'Pending' => 'warning',
                     'Paid' => 'success',
@@ -102,12 +130,10 @@ class DictionaryService
                     'Partial' => 'info'
                 ],
                 'application_status' => [
-                    'Submitted' => 'info',
-                    'Under Review' => 'warning',
-                    'Approved' => 'success',
-                    'Rejected' => 'danger',
-                    'Waitlisted' => 'secondary',
-                    'Withdrawn' => 'secondary'
+                    'submitted' => 'secondary',
+                    'under_review' => 'info',
+                    'approved' => 'success',
+                    'rejected' => 'danger'
                 ],
                 'lease_status' => [
                     'Draft' => 'secondary',

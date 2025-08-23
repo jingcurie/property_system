@@ -23,7 +23,13 @@ class PropertyController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Property::with(['rentalInfo', 'owners', 'media']);
+        $query = Property::with([
+            'rentalInfo', 
+            'owners', 
+            'media',
+            'feature',  // 添加feature关联，避免N+1查询
+            'amenity'   // 添加amenity关联，支持设施显示
+        ]);
 
         //调用helpers中的functions
         $query = applyKeywordSearch($query, $request);
@@ -33,7 +39,6 @@ class PropertyController extends Controller
 
         return view('properties.index', compact('properties'));
     }
-
 
     /**
      * 显示创建页面
@@ -563,13 +568,10 @@ class PropertyController extends Controller
 
     public function batchDelete(Request $request)
     {
-        $ids = $request->input('selected_ids', []);
+        $ids = $request->input('ids', []);
 
-        if (! is_array($ids) || count($ids) === 0) {
-            return response()->json([
-                'success' => false,
-                'message' => '请选择要删除的房源',
-            ], 400);
+         if (empty($ids)) {
+            return response()->json(['error' => '请选择至少一条记录'], 422);
         }
 
         //注意这里其他模块要改id名称，class名称

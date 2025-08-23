@@ -34,17 +34,17 @@
 
         <!-- 基础信息 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.basic_info') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.basic_info') }}</div>
             <div class="card-body row g-3">
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('property.property_name') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.property_name') }} *</label>
                     <input type="text" name="property_name" class="form-control" required maxlength="100"
                         value="{{ old('property_name', $property->property_name ?? '') }}">
                 </div>
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('property.property_type') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.property_type') }} *</label>
                     <select name="property_type" class="form-select select-filter" required>
-                        <option value="">{{ __('property.select_property_type') }}</option>
+                        <option value="">{{ ut('modules.property.select_property_type') }}</option>
                         @foreach (dict('property_type', app()->getLocale()) as $value => $label)
                             <option value="{{ $value }}" @selected(old('property_type', $property->property_type ?? '') == $value)>
                                 {{ $label }}
@@ -54,38 +54,38 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('property.ownership_type') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.ownership_type') }} *</label>
                     <select name="ownership_type" class="form-select select-filter" required>
-                        @foreach (['Owned', 'Managed'] as $type)
-                            <option value="{{ $type }}" @selected(old('ownership_type', $property->ownership_type ?? '') == $type)>
-                                {{ __('property.ownership_types.' . $type) }}
+                        @foreach (dict('ownership_type', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('ownership_type', $property->ownership_type ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.year_built') }}</label>
+                    <label class="form-label">{{ ut('modules.property.year_built') }}</label>
                     <input type="number" name="year_built" class="form-control" min="1800"
                         max="{{ date('Y') }}" value="{{ old('year_built', $property->year_built ?? '') }}">
                 </div>
 
                 <div class="col-md-12">
-                    <label class="form-label">{{ __('property.street_address') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.street_address') }} *</label>
                     <input type="text" name="address_street" class="form-control" required
                         value="{{ old('address_street', $property->address_street ?? '') }}">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.city') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.city') }} *</label>
                     <input type="text" name="address_city" class="form-control" required
                         value="{{ old('address_city', $property->address_city ?? '') }}">
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label">{{ __('property.province') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.province') }} *</label>
                     <select name="address_province" class="form-select select-filter" required>
-                        <option value="">{{ __('property.select_province') }}</option>
+                        <option value="">{{ ut('modules.property.select_province') }}</option>
                         @foreach (dict('provinces', app()->getLocale()) as $value => $label)
                             <option value="{{ $value }}" @selected(old('provinces', $property->property_type ?? '') == $value)>
                                 {{ $label }}
@@ -95,7 +95,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.postal_code') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.postal_code') }} *</label>
                     <input type="text" name="address_postal_code" class="form-control" required maxlength="10"
                         value="{{ old('address_postal_code', $property->address_postal_code ?? '') }}">
                 </div>
@@ -104,57 +104,57 @@
 
         <!-- 房屋特征 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.property_features') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.property_features') }}</div>
             <div class="card-body row g-3">
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.bedrooms') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.bedrooms') }} *</label>
                     <input type="number" name="bedrooms" class="form-control" required min="0"
                         value="{{ old('bedrooms', $property->feature->bedrooms ?? '') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.bathrooms') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.bathrooms') }} *</label>
                     <input type="number" step="0.5" name="bathrooms" class="form-control" required min="0"
                         value="{{ old('bathrooms', $property->feature->bathrooms ?? '') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.square_footage') }}</label>
+                    <label class="form-label">{{ ut('modules.property.square_footage') }}</label>
                     <input type="number" name="square_footage" class="form-control" min="0"
                         value="{{ old('square_footage', $property->feature->square_footage ?? '') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.parking_spaces') }}</label>
+                    <label class="form-label">{{ ut('modules.property.parking_spaces') }}</label>
                     <input type="number" name="parking_spaces" class="form-control" min="0"
                         value="{{ old('parking_spaces', $property->feature->parking_spaces ?? '') }}">
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.parking_type') }}</label>
+                    <label class="form-label">{{ ut('modules.property.parking_type') }}</label>
                     <select name="parking_type" class="form-select select-filter">
-                        @foreach (['Indoor', 'Outdoor', 'Garage', 'None'] as $type)
-                            <option value="{{ $type }}" @selected(old('parking_type', $property->feature->parking_type ?? '') == $type)>
-                                {{ __('property.parking_types.' . $type) }}
+                        @foreach (dict('parking_type', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('parking_type', $property->feature->parking_type ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.heating_type') }}</label>
+                    <label class="form-label">{{ ut('modules.property.heating_type') }}</label>
                     <input type="text" name="heating_type" class="form-control" maxlength="50"
                         value="{{ old('heating_type', $property->feature->heating_type ?? '') }}">
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.cooling_type') }}</label>
+                    <label class="form-label">{{ ut('modules.property.cooling_type') }}</label>
                     <input type="text" name="cooling_type" class="form-control" maxlength="50"
                         value="{{ old('cooling_type', $property->feature->cooling_type ?? '') }}">
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.laundry') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.laundry') }} *</label>
                     <select name="laundry" class="form-select select-filter" required>
                         @foreach (['In-unit', 'Shared', 'None'] as $option)
                             <option value="{{ $option }}" @selected(old('laundry', $property->feature->laundry ?? 'None') == $option)>
-                                {{ __('property.laundry_options.' . $option) }}
+                                {{ ut('modules.property.laundry_options.' . $option) }}
                             </option>
                         @endforeach
                     </select>
@@ -164,7 +164,7 @@
                     <div class="form-check form-switch ms-2">
                         <input type="checkbox" class="form-check-input" name="furnished" value="1"
                             id="furnished" @checked(old('furnished', $property->feature->furnished ?? false))>
-                        <label class="form-check-label" for="furnished">{{ __('property.furnished') }}</label>
+                        <label class="form-check-label" for="furnished">{{ ut('modules.property.furnished') }}</label>
                     </div>
                 </div>
             </div>
@@ -172,7 +172,7 @@
 
         <!-- 配套设施 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.amenities') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.amenities') }}</div>
             <div class="card-body row g-3">
                 @foreach ([
         'has_gym' => 'has_gym',
@@ -199,78 +199,78 @@
 
         <!-- 出租信息 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.rental_info') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.rental_info') }}</div>
             <div class="card-body row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.availability_status') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.availability_status') }} *</label>
                     <select name="availability_status" class="form-select select-filter" required>
-                        @foreach (['Available', 'Leased', 'Under Maintenance'] as $status)
-                            <option value="{{ $status }}" @selected(old('availability_status', $property->rentalInfo->availability_status ?? '') == $status)>
-                                {{ __('property.availability_statuses.' . str_replace(' ', '_', $status)) }}
+                        @foreach (dict('availability_status', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('availability_status', $property->rentalInfo->availability_status ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.monthly_rent') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.monthly_rent') }} *</label>
                     <input type="number" name="monthly_rent" class="form-control" required step="0.01"
                         min="0" value="{{ old('monthly_rent', $property->rentalInfo->monthly_rent ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.security_deposit') }}</label>
+                    <label class="form-label">{{ ut('modules.property.security_deposit') }}</label>
                     <input type="number" name="security_deposit" class="form-control" step="0.01"
                         min="0"
                         value="{{ old('security_deposit', $property->rentalInfo->security_deposit ?? '') }}">
                 </div>
 
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.lease_term_type') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.lease_term_type') }} *</label>
                     <select name="lease_term_type" class="form-select select-filter" required>
-                        @foreach (['Monthly', 'Fixed Term', 'Annual'] as $type)
-                            <option value="{{ $type }}" @selected(old('lease_term_type', $property->rentalInfo->lease_term_type ?? '') == $type)>
-                                {{ __('property.lease_term_types.' . str_replace(' ', '_', $type)) }}
+                        @foreach (dict('lease_term_type', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('lease_term_type', $property->rentalInfo->lease_term_type ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.min_lease_term') }}</label>
+                    <label class="form-label">{{ ut('modules.property.min_lease_term') }}</label>
                     <input type="number" name="min_lease_term" class="form-control" min="1"
                         value="{{ old('min_lease_term', $property->rentalInfo->min_lease_term ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.available_date') }}</label>
+                    <label class="form-label">{{ ut('modules.property.available_date') }}</label>
                     <input type="date" name="available_date" class="form-control"
                         value="{{ old('available_date', $property->rentalInfo->available_date ?? '') }}">
                 </div>
 
                 <div class="col-md-12">
-                    <label class="form-label d-block mb-1">{{ __('property.utilities_included') }}</label>
+                    <label class="form-label d-block mb-1">{{ ut('modules.property.utilities_included') }}</label>
                     <div class="utility-checkbox-group">
-                        @foreach (['Water', 'Electricity', 'Gas', 'Internet', 'Cable'] as $item)
+                        @foreach (dict('utilities', app()->getLocale()) as $value => $label)
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" name="utilities_included[]"
-                                    value="{{ $item }}" id="util_{{ $item }}"
-                                    @checked(collect(old('utilities_included', explode(',', $property->rentalInfo->utilities_included ?? '')))->contains($item))>
+                                    value="{{ $value }}" id="util_{{ $value }}"
+                                    @checked(collect(old('utilities_included', explode(',', $property->rentalInfo->utilities_included ?? '')))->contains($value))>
                                 <label class="form-check-label"
-                                    for="util_{{ $item }}">{{ __('property.utilities.' . $item) }}</label>
+                                    for="util_{{ $value }}">{{ $label }}</label>
                             </div>
                         @endforeach
                     </div>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.pet_policy') }} *</label>
+                    <label class="form-label">{{ ut('modules.property.pet_policy') }} *</label>
                     <select name="pet_policy" class="form-select select-filter" required>
-                        @foreach (['Allowed', 'Restricted', 'Not Allowed'] as $policy)
-                            <option value="{{ $policy }}" @selected(old('pet_policy', $property->rentalInfo->pet_policy ?? '') == $policy)>
-                                {{ __('property.pet_policies.' . str_replace(' ', '_', $policy)) }}
+                        @foreach (dict('pet_policy', app()->getLocale()) as $value => $label)
+                            <option value="{{ $value }}" @selected(old('pet_policy', $property->rentalInfo->pet_policy ?? '') == $value)>
+                                {{ $label }}
                             </option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label">{{ __('property.pet_fee') }}</label>
+                    <label class="form-label">{{ ut('modules.property.pet_fee') }}</label>
                     <input type="number" name="pet_fee" class="form-control" step="0.01" min="0"
                         value="{{ old('pet_fee', $property->rentalInfo->pet_fee ?? '') }}">
                 </div>
@@ -279,22 +279,22 @@
 
         <!-- 财务信息 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.financial_info') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.financial_info') }}</div>
             <div class="card-body row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.management_fee_percentage') }}</label>
+                    <label class="form-label">{{ ut('modules.property.management_fee_percentage') }}</label>
                     <input type="number" name="management_fee_percentage" class="form-control" step="0.01"
                         min="0" max="100"
                         value="{{ old('management_fee_percentage', $property->financialInfo->management_fee_percentage ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.annual_property_tax') }}</label>
+                    <label class="form-label">{{ ut('modules.property.annual_property_tax') }}</label>
                     <input type="number" name="annual_property_tax" class="form-control" step="0.01"
                         min="0"
                         value="{{ old('annual_property_tax', $property->financialInfo->annual_property_tax ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.maintenance_fund') }}</label>
+                    <label class="form-label">{{ ut('modules.property.maintenance_fund') }}</label>
                     <input type="number" name="maintenance_fund" class="form-control" step="0.01"
                         min="0"
                         value="{{ old('maintenance_fund', $property->financialInfo->maintenance_fund ?? '') }}">
@@ -304,7 +304,7 @@
                         <input type="checkbox" class="form-check-input" name="hst_included" value="1"
                             id="hst_included" @checked(old('hst_included', $property->financialInfo->hst_included ?? false))>
                         <label class="form-check-label ms-2"
-                            for="hst_included">{{ __('property.hst_included') }}</label>
+                            for="hst_included">{{ ut('modules.property.hst_included') }}</label>
                     </div>
                 </div>
             </div>
@@ -312,20 +312,20 @@
 
         <!-- 合规信息 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.compliance_info') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.compliance_info') }}</div>
             <div class="card-body row g-3">
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.property_tax_id') }}</label>
+                    <label class="form-label">{{ ut('modules.property.property_tax_id') }}</label>
                     <input type="text" name="property_tax_id" class="form-control" maxlength="50"
                         value="{{ old('property_tax_id', $property->complianceInfo->property_tax_id ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.rental_license_number') }}</label>
+                    <label class="form-label">{{ ut('modules.property.rental_license_number') }}</label>
                     <input type="text" name="rental_license_number" class="form-control" maxlength="50"
                         value="{{ old('rental_license_number', $property->complianceInfo->rental_license_number ?? '') }}">
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.insurance_policy_number') }}</label>
+                    <label class="form-label">{{ ut('modules.property.insurance_policy_number') }}</label>
                     <input type="text" name="insurance_policy_number" class="form-control" maxlength="50"
                         value="{{ old('insurance_policy_number', $property->complianceInfo->insurance_policy_number ?? '') }}">
                 </div>
@@ -335,7 +335,7 @@
                         <input type="checkbox" class="form-check-input" name="fire_safety_compliance" value="1"
                             id="fire_safety_compliance" @checked(old('fire_safety_compliance', $property->complianceInfo->fire_safety_compliance ?? false))>
                         <label class="form-check-label"
-                            for="fire_safety_compliance">{{ __('property.fire_safety_compliance') }}</label>
+                            for="fire_safety_compliance">{{ ut('modules.property.fire_safety_compliance') }}</label>
                     </div>
                 </div>
                 <div class="col-md-4 d-flex align-items-center">
@@ -343,11 +343,11 @@
                         <input type="checkbox" class="form-check-input" name="accessibility_compliance"
                             value="1" id="accessibility_compliance" @checked(old('accessibility_compliance', $property->complianceInfo->accessibility_compliance ?? false))>
                         <label class="form-check-label"
-                            for="accessibility_compliance">{{ __('property.accessibility_compliance') }}</label>
+                            for="accessibility_compliance">{{ ut('modules.property.accessibility_compliance') }}</label>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label">{{ __('property.last_inspection_date') }}</label>
+                    <label class="form-label">{{ ut('modules.property.last_inspection_date') }}</label>
                     <input type="date" name="last_inspection_date" class="form-control"
                         value="{{ old('last_inspection_date', $property->complianceInfo->last_inspection_date ?? '') }}">
                 </div>
@@ -356,7 +356,7 @@
 
         <!-- Dropzone 上传模块 -->
         <div class="card mb-4">
-            <div class="card-header fw-bold">{{ __('property.media_upload') }}</div>
+            <div class="card-header fw-bold">{{ ut('modules.property.media_upload') }}</div>
             <div class="card-body">
                 <div class="dropzone" id="property-dropzone"></div>
                 <input type="hidden" name="cover_media" id="cover_media"
@@ -371,16 +371,16 @@
                     @endif
                 </div>
                 <div id="media_order_inputs"></div>
-                <small class="text-muted d-block mt-2">{{ __('property.upload_hint') }}</small>
+                <small class="text-muted d-block mt-2">{{ ut('modules.property.upload_hint') }}</small>
             </div>
         </div>
 
         <div class="text-end">
             <button type="submit" class="btn btn-primary px-4 py-2 fs-7">
-                {{ isset($property) ? __('property.update_property') : __('property.save_property') }}
+                {{ isset($property) ? ut('modules.property.update_property') : ut('modules.property.save_property') }}
             </button>
             <a href="{{ route('properties.index') }}"
-                class="btn btn-secondary ms-2 px-4 py-2">{{ __('property.cancel') }}</a>
+                class="btn btn-secondary ms-2 px-4 py-2">{{ ut('modules.property.cancel') }}</a>
         </div>
     </div>
 </form>
@@ -459,7 +459,7 @@
                         document.getElementById('hidden_inputs').appendChild(keep);
 
                         const toggle = document.createElement('a');
-                        toggle.innerHTML = '{{ __('property.set_as_cover') }}';
+                        toggle.innerHTML = '{{ ut('modules.property.set_as_cover') }}';
                         toggle.classList.add('cover-toggle');
                         toggle.onclick = function() {
                             document.querySelectorAll('.dz-preview').forEach(p => p.classList
@@ -487,7 +487,7 @@
                 file.previewElement.setAttribute('data-file-name', response.name);
 
                 const toggle = document.createElement('a');
-                toggle.innerHTML = '{{ __('property.set_as_cover') }}';
+                toggle.innerHTML = '{{ ut('modules.property.set_as_cover') }}';
                 toggle.classList.add('cover-toggle');
                 toggle.onclick = function() {
                     document.querySelectorAll('.dz-preview').forEach(p => p.classList.remove('cover'));

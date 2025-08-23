@@ -2,7 +2,7 @@
 
 @section('content')
     @include('components.pages.index-table', [
-        'pageTitle' => __('lease.page_title'),
+        'pageTitle' => ut('modules.lease.page_title'),
         'pageIcon' => 'bi bi-file-earmark-text',
         'rowClickUrl' => fn($item) => route('leases.show', $item->lease_id),
 
@@ -11,14 +11,14 @@
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-plus-circle',
-                    'label' => __('lease.create_label'),
+                    'label' => ut('modules.lease.create_label'),
                     'url' => route('leases.create'),
                     'class' => 'btn btn-primary',
                 ],
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-download',
-                    'label' => __('property.export_label'),
+                    'label' => ut('modules.lease.export_label'),
                     'url' => route('leases.export', request()->all()),
                     'class' => 'btn btn-outline-secondary',
                 ],
@@ -54,12 +54,12 @@
             [
                 'relation' => null,
                 'column' => 'lease_number',
-                'label' => __('lease.search_fields.lease_number'),
+                'label' => ut('modules.lease.search_fields.lease_number'),
             ],
             [
                 'relation' => 'tenants',
                 'column' => 'first_name',
-                'label' => __('lease.search_fields.tenant'),
+                'label' => ut('modules.lease.search_fields.tenant'),
             ],
             [
                 'relation' => 'tenants',
@@ -69,31 +69,31 @@
             [
                 'relation' => 'property',
                 'column' => 'address_street',
-                'label' => __('lease.search_fields.address'),
+                'label' => ut('modules.lease.search_fields.address'),
             ],
         ],
     
         'filterFields' => [
             [
                 'key' => 'status',
-                'label' => __('lease.filters.status'),
+                'label' => ut('modules.lease.filters.status'),
                 'type' => 'select',
                 'column' => 'status',
                 'options' => [
-                    'draft' => __('lease.statuses.draft'),
-                    'active' => __('lease.statuses.active'),
-                    'terminated' => __('lease.statuses.terminated'),
+                    'draft' => ut('modules.lease.statuses.draft'),
+                    'active' => ut('modules.lease.statuses.active'),
+                    'terminated' => ut('modules.lease.statuses.terminated'),
                 ],
             ],
             [
                 'key' => 'start_date',
-                'label' => __('lease.filters.start_date'),
+                'label' => ut('modules.lease.filters.start_date'),
                 'type' => 'date',
                 'column' => 'start_date',
             ],
             [
                 'key' => 'rent',
-                'label' => __('lease.filters.monthly_rent'),
+                'label' => ut('modules.lease.filters.monthly_rent'),
                 'type' => 'range',
                 'column' => 'monthly_rent',
             ],
@@ -104,12 +104,12 @@
     
         'columns' => [
             [
-                'label' => __('lease.columns.lease_number'),
+                'label' => ut('modules.lease.columns.lease_number'),
                 'column' => 'lease_number',
                 'sortable' => true,
             ],
             [
-                'label' => __('lease.columns.primary_tenant'),
+                'label' => ut('modules.lease.columns.primary_tenant'),
                 'field' => 'primary_tenant',
                 'type' => 'custom',
                 'render' => function ($item) {
@@ -119,26 +119,26 @@
                 'sortable' => false,
             ],
             [
-                'label' => __('lease.columns.property_address'),
+                'label' => ut('modules.lease.columns.property_address'),
                 'column' => 'property.address_street',
                 'type' => 'combine',
                 'columns' => ['property.address_street', 'property.address_city'],
                 'sortable' => true,
             ],
             [
-                'label' => __('lease.columns.rent'),
+                'label' => ut('modules.lease.columns.rent'),
                 'column' => 'monthly_rent',
                 'sortable' => true,
             ],
             [
-                'label' => __('lease.columns.dates'),
+                'label' => ut('modules.lease.columns.dates'),
                 'type' => 'custom',
                 'sortable' => true,
                 'sort_field' => 'start_date',
                 'render' => fn($item) => e($item->start_date) . ' ~ ' . e($item->end_date),
             ],
             [
-                'label' => __('lease.columns.status'),
+                'label' => ut('modules.lease.columns.status'),
                 'column' => 'status',
                 'type' => 'badge',
                 'badge_map' => [
@@ -152,23 +152,23 @@
     
         'actions' => [
             [
-                'label' => __('lease.actions.view'),
+                'label' => ut('modules.lease.actions.view'),
                 'url' => fn($item) => route('leases.show', $item->lease_id),
                 'icon' => 'bi bi-eye',
             ],
             [
-                'label' => __('lease.actions.edit'),
+                'label' => ut('modules.lease.actions.edit'),
                 'url' => fn($item) => route('leases.edit', $item->lease_id),
                 'icon' => 'bi bi-pencil-square',
             ],
             [
-                'label' => __('lease.actions.download_pdf'),
+                'label' => ut('modules.lease.actions.download_pdf'),
                 'url' => fn($item) => route('leases.exportPdf', $item->lease_id),
                 'icon' => 'bi bi-file-earmark-pdf',
                 'class' => 'text-danger',
             ],
             [
-                'label' => __('lease.actions.delete'),
+                'label' => ut('modules.lease.actions.delete'),
                 'url' => fn($item) => 'javascript:void(0);',
                 'icon' => 'bi bi-trash',
                 'class' => 'text-danger',

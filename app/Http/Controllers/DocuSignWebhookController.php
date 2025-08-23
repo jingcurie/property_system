@@ -30,91 +30,64 @@ class DocuSignWebhookController extends Controller
         $envelopeId = trim($data['data']['envelopeId'] ?? '');
         $accountId = trim($data['data']['accountId'] ?? env('DOCUSIGN_ACCOUNT_ID'));
 
-        \Log::info('DocuSign Event', [
-            'event' => $event,
-            'envelope_id' => $envelopeId
-        ]);
-
-        if ($event !== 'envelope-completed') {
-            return response('Event logged, no action needed', 200);
-        }
-
         $file = File::where('envelope_id', $envelopeId)->first();
         if (!$file || $file->fileable_type !== Lease::class) {
             return response('Lease file not found', 404);
         }
 
-        $lease = Lease::find($file->fileable_id);
-        if (!$lease) {
-            return response('Lease not found', 404);
-        }
-
         try {
-            // 每次都重新获取新的token
+            // 获取 DocuSign API Client
             $service = new DocuSignService();
             $apiClient = $service->getApiClient();
 
             $privateKey = file_get_contents(storage_path('app/docusign/private.key'));
-            
-            // 获取新的JWT token
-            [$token, $statusCode, $headers] = $apiClient->requestJWTUserToken(
-                trim(env('DOCUSIGN_CLIENT_ID')),
-                trim(env('DOCUSIGN_USER_ID')),
+            [$token] = $apiClient->requestJWTUserToken(
+                env('DOCUSIGN_CLIENT_ID'),
+                env('DOCUSIGN_USER_ID'),
                 $privateKey,
                 ['signature', 'impersonation'],
                 60
             );
-
             $accessToken = $token->getAccessToken();
-            \Log::info('获取到新的AccessToken', ['token_length' => strlen($accessToken)]);
 
-            // 等待文档就绪
-            sleep(10);
+            // 1️⃣ 更新状态
+            $file->signature_status = str_replace('envelope-', '', $event);
 
-            \Log::info('准备下载 combined PDF', [
-                'account_id' => $accountId,
-                'envelope_id' => $envelopeId,
-            ]);
+            // 2️⃣ 更新接收人（签署人）
+            $envelopesApi = new \DocuSign\eSign\Api\EnvelopesApi($apiClient);
+            $recipients = $envelopesApi->listRecipients($accountId, $envelopeId);
+            $signerNames = collect($recipients->getSigners() ?? [])->pluck('name')->implode(', ');
 
-            // 使用HTTP直接下载（避免SDK的token过期问题）
-            $downloadUrl = "https://demo.docusign.net/restapi/v2.1/accounts/{$accountId}/envelopes/{$envelopeId}/documents/combined";
-            
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $accessToken,
-                'Accept' => 'application/pdf'
-            ])->timeout(60)->get($downloadUrl);
+            $baseDescription = preg_replace('/\nTo: .*/', '', $file->description);
+            $file->description = trim($baseDescription . "\nTo: " . $signerNames);
 
-            if ($response->successful()) {
-                $signedPdf = $response->body();
-                
-                if (strlen($signedPdf) > 1000) { // 确保不是错误响应
-                    Storage::disk('public')->put($file->path, $signedPdf);
+            // 3️⃣ 更新 last_change
+            $file->updated_at = now();
+            $file->save();
 
+            // 4️⃣ 如果是完成，下载 PDF
+            if ($event === 'envelope-completed') {
+                sleep(10);
+                $downloadUrl = "https://demo.docusign.net/restapi/v2.1/accounts/{$accountId}/envelopes/{$envelopeId}/documents/combined";
+                $response = \Http::withHeaders([
+                    'Authorization' => 'Bearer ' . $accessToken,
+                    'Accept' => 'application/pdf'
+                ])->timeout(60)->get($downloadUrl);
+
+                if ($response->successful() && strlen($response->body()) > 1000) {
+                    \Storage::disk('public')->put($file->path, $response->body());
                     $file->update([
-                        'signature_status'   => 'completed',
-                        'tenant_signed'      => true,
+                        'tenant_signed' => true,
                         'tenant_signed_date' => now(),
-                        'size'               => strlen($signedPdf),
-                        'path'               => $signedPath,  // 更新为新路径
+                        'size' => strlen($response->body()),
                     ]);
-
-                    \Log::info('PDF 下载成功', ['size' => strlen($signedPdf)]);
-                    return response('Webhook handled', 200);
-                } else {
-                    \Log::error('下载的PDF文件太小', ['size' => strlen($signedPdf)]);
-                    return response('PDF file too small', 500);
                 }
-            } else {
-                \Log::error('HTTP下载失败', [
-                    'status' => $response->status(),
-                    'body' => $response->body()
-                ]);
-                return response('HTTP download failed', 500);
             }
 
+            return response('Webhook handled', 200);
         } catch (\Exception $e) {
-            \Log::error('DocuSign 下载异常', ['msg' => $e->getMessage()]);
-            return response('Download failed', 500);
+            \Log::error('DocuSign Webhook 异常', ['msg' => $e->getMessage()]);
+            return response('Webhook error', 500);
         }
     }
 }

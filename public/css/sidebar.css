@@ -33,7 +33,7 @@
   backdrop-filter: blur(10px);
   border-right: 1px solid var(--glass-border);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1;
+  z-index: 1000;
 }
 
 .sidebar.collapsed {
@@ -198,7 +198,7 @@
 }
 
 .nav-item.active .submenu {
-  max-height: 200px;
+  max-height: 250px;
 }
 
 .submenu-item {
@@ -353,7 +353,7 @@
         }
 
         /* 通知弹窗 */
-        .notification-popup {
+        /* .notification-popup {
             position: fixed;
             top: 80px;
             right: 20px;
@@ -398,7 +398,7 @@
 
         .notification-item.unread {
             background: rgba(59, 130, 246, 0.1);
-        }
+        } */
 
 
 
@@ -513,7 +513,7 @@
 
 
 
-    .notification-popup {
+    /* .notification-popup {
     position: absolute;
     top: 60px;
     right: 10px;
@@ -548,4 +548,4 @@
 .notification-item.unread {
     background: #f0f8ff;
 }
-
+ */

@@ -162,6 +162,10 @@ return [
         'monthly_rent' => '月租金',
         'city' => '城市',
         'property_type' => '房源类型',
+        'bedrooms' => '卧室数量',
+        'availability_status' => '可用状态',
+        'square_footage' => '面积',
+        'parking_spaces' => '停车位',
     ],
 
     // 列表列标题
@@ -174,6 +178,8 @@ return [
         'rent' => '租金',
         'status' => '状态',
         'owner' => '房东',
+        'owners' => '业主',
+        'features' => '设施',
     ],
 
     // 操作按钮

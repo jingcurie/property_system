@@ -17,14 +17,14 @@
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-plus-circle',
-                    'label' => __('property.create_label'),
+                    'label' => ut('modules.permission.create_label'),
                     'url' => route('properties.create'),
                     'class' => 'btn btn-primary',
                 ],
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-download',
-                    'label' => __('property.export_label'),
+                    'label' => ut('modules.permission.export_label'),
                     'url' => route('properties.export', request()->all()),
                     'class' => 'btn btn-outline-secondary',
                 ],

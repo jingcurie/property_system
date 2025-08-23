@@ -1,0 +1,162 @@
+.notification-panel {
+    position: fixed;
+    top: 70px;
+    right: 10px;
+    width: 400px;
+    max-height: 600px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    margin: 0 auto;
+    opacity: 1;                 
+    transform: translateX(500px);
+    pointer-events: none;      
+    transition: all 0.3s ease; 
+    z-index: 1000;
+}
+
+.notification-panel.show {
+    opacity: 1;
+    transform: translateX(0);   /* 回到原位 */
+    pointer-events: auto;       /* 恢复点击 */
+}
+
+.panel-header {
+    background: #343a40;
+    color: white;
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.panel-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+.header-actions {
+    display: flex;
+    gap: 8px;
+}
+.header-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+}
+.header-btn:hover { background: rgba(255,255,255,0.3); }
+.panel-body { max-height: 500px; overflow-y: auto; }
+.notification-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid #f1f3f4;
+    position: relative;
+    cursor: pointer;
+}
+.notification-item:hover { background: #f8f9fa; }
+.notification-item.unread {
+    border-left: 3px solid #0d6efd;
+    background: #f8f9ff;
+}
+.notification-item.unread::after {
+    content: '';
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    width: 6px;
+    height: 6px;
+    background: #0d6efd;
+    border-radius: 50%;
+}
+.notification-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+.notification-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+.priority-0 { background: #e3f2fd; color: #1976d2; }
+.priority-1 { background: #fff3e0; color: #f57c00; }
+.priority-2 { background: #ffebee; color: #d32f2f; }
+.notification-content { flex: 1; min-width: 0; }
+.notification-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; color:#212529; }
+.notification-text {
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+.notification-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+    color: #868e96;
+}
+.meta-left { display: flex; align-items: center; gap: 6px; }
+.priority-dot { width: 4px; height: 4px; border-radius: 50%; }
+.priority-dot.high { background: #dc2626; }
+.priority-dot.medium { background: #d97706; }
+.priority-dot.low { background: #0369a1; }
+.notification-actions { display: none; margin-top: 8px; gap: 6px; }
+.notification-item.expanded .notification-actions { display: flex; }
+.notification-item.expanded .notification-text { -webkit-line-clamp: unset; overflow: visible; }
+.action-btn {
+    padding: 4px 8px;
+    border: 1px solid #dee2e6;
+    background: white;
+    color: #6c757d;
+    border-radius: 3px;
+    font-size: 11px;
+    cursor: pointer;
+    flex: 1;
+    text-align: center;
+}
+.action-btn:hover { border-color: #0d6efd; color: #0d6efd; }
+.action-btn.primary { background: #0d6efd; border-color: #0d6efd; color: white; }
+.empty-state { text-align: center; padding: 40px 20px; color: #6c757d; }
+.empty-icon { font-size: 32px; margin-bottom: 12px; opacity: 0.5; }
+.filter-bar {
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+}
+.filter-btn {
+    padding: 4px 8px;
+    background: white;
+    border: 1px solid #dee2e6;
+    color: #6c757d;
+    border-radius: 12px;
+    font-size: 11px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.filter-btn.active { background: #0d6efd; border-color: #0d6efd; color: white; }
+.panel-footer {
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+}
+.footer-link { color: #0d6efd; text-decoration: none; font-size: 12px; }
+.footer-link:hover { text-decoration: underline; }

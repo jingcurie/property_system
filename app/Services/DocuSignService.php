@@ -107,12 +107,18 @@ class DocuSignService
 
             $signerObjects = [];
             foreach ($signers as $index => $signerInfo) {
-                $signHere = new SignHere([
-                    'document_id' => '1',
-                    'page_number' => '1',                // ⚠️ 你可以根据合同签名页设置成其他页码
-                    'x_position' => '100',               // 左右位置（单位是像素）
-                    'y_position' => (300 + $index * 100) // 上下错开，避免签在一起
-                ]);
+                // 为每个签署人创建多个签名位置
+                $signaturePositions = $this->getMultipleSignaturePositions($signerInfo['type'], $index, count($signers));
+                
+                $signHereTabs = [];
+                foreach ($signaturePositions as $posIndex => $position) {
+                    $signHereTabs[] = new SignHere([
+                        'document_id' => '1',
+                        'page_number' => $position['page'],
+                        'x_position' => $position['x'],
+                        'y_position' => $position['y']
+                    ]);
+                }
 
                 $signer = new Signer([
                     'email' => $signerInfo['email'],
@@ -120,7 +126,7 @@ class DocuSignService
                     'recipient_id' => (string)($index + 1),
                     'routing_order' => (string)($index + 1),
                     'tabs' => new \DocuSign\eSign\Model\Tabs([
-                        'sign_here_tabs' => [$signHere]
+                        'sign_here_tabs' => $signHereTabs
                     ])
                 ]);
 
@@ -149,5 +155,97 @@ class DocuSignService
                 'error' => $e->getMessage()
             ];
         }
+    }
+
+    /**
+     * 为每个签署人获取多个签名位置
+     * 基于实际PDF文档的所有签名位置
+     */
+    private function getMultipleSignaturePositions($signerType, $signerIndex, $totalSigners)
+    {
+        $positions = [];
+        
+        switch ($signerType) {
+            case 'tenant':
+                // 租客需要在多个地方签名
+                $positions = [
+                    // 第6页 - 主要签名位置
+                    [
+                        'page' => '6',
+                        'x' => 100,
+                        'y' => 400 + ($signerIndex * 80)
+                    ],
+                    // 第13页 - 最后一页签名
+                    [
+                        'page' => '13',
+                        'x' => 120,
+                        'y' => 300 + ($signerIndex * 60)
+                    ],
+                    // 第2页 - 初始签名（如果选择E选项）
+                    [
+                        'page' => '2',
+                        'x' => 150,
+                        'y' => 500 + ($signerIndex * 30)
+                    ]
+                ];
+                break;
+                
+            case 'owner':
+                // 业主需要在多个地方签名
+                $positions = [
+                    // 第6页 - 主要签名位置
+                    [
+                        'page' => '6',
+                        'x' => 100,
+                        'y' => 200 + ($signerIndex * 80)
+                    ],
+                    // 第13页 - 最后一页签名
+                    [
+                        'page' => '13',
+                        'x' => 120,
+                        'y' => 500
+                    ],
+                    // 第2页 - 初始签名（如果选择E选项）
+                    [
+                        'page' => '2',
+                        'x' => 150,
+                        'y' => 500
+                    ]
+                ];
+                break;
+                
+            case 'agent':
+                // 代理公司签名位置
+                $positions = [
+                    [
+                        'page' => '6',
+                        'x' => 100,
+                        'y' => 600 + ($signerIndex * 80)
+                    ],
+                    [
+                        'page' => '13',
+                        'x' => 120,
+                        'y' => 600 + ($signerIndex * 60)
+                    ]
+                ];
+                break;
+                
+            default: // custom
+                $positions = [
+                    [
+                        'page' => '6',
+                        'x' => 100,
+                        'y' => 700 + ($signerIndex * 80)
+                    ],
+                    [
+                        'page' => '13',
+                        'x' => 120,
+                        'y' => 700 + ($signerIndex * 60)
+                    ]
+                ];
+                break;
+        }
+        
+        return $positions;
     }
 }

@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+
 @section('content')
     @include('components.pages.index-table', [
         'pageTitle' => __('application.list_page_title'),
@@ -71,19 +72,50 @@
                 'label' => __('application.column_applicant'),
             ],
         ],  
+
+        'quickFilters' => [
+            [
+                'key' => 'status',
+                'label' => ut('modules.application.filter_status'),
+                'column' => 'status',
+                'options' => dict('application_status', app()->getLocale()),
+            ],
+        ],
     
         'filterFields' => [
             [
-                'key' => 'status',
-                'label' => __('application.filter_status'),
+                'key' => 'reviewer',
+                'label' => ut('modules.application.filter_reviewer'),
                 'type' => 'select',
-                'column' => 'status',
-                'options' => [
-                    'submitted' => __('application.status_submitted'),
-                    'under_review' => __('application.status_under_review'),
-                    'approved' => __('application.status_approved'),
-                    'rejected' => __('application.status_rejected'),
-                ],
+                'relation' => 'reviewer',
+                'column' => 'id',
+                'options' => \App\Models\User::pluck('name', 'id')->toArray(),
+            ],
+            [
+                'key' => 'submitted_date',
+                'label' => ut('modules.application.filter_submitted_date'),
+                'type' => 'date_range',
+                'column' => 'submitted_at',
+            ],
+            [
+                'key' => 'reviewed_date',
+                'label' => ut('modules.application.filter_reviewed_date'),
+                'type' => 'date_range',
+                'column' => 'reviewed_at',
+            ],
+            [
+                'key' => 'property_type',
+                'label' => ut('modules.application.filter_property_type'),
+                'type' => 'select',
+                'relation' => 'property',
+                'column' => 'property_type',
+                'options' => dict('property_type', app()->getLocale()),
+            ],
+            [
+                'key' => 'risk_score',
+                'label' => ut('modules.application.filter_risk_score'),
+                'type' => 'number_range',
+                'column' => 'risk_score',
             ],
         ],
     
@@ -93,38 +125,83 @@
         'columns' => [
             [
                 'label' => __('application.column_application_code'),
-                'column' => 'application_code',
+                'type' => 'custom',
                 'sortable' => true,
+                'column' => 'application_code',
+                'render' => function ($item) {
+                    $code = e($item->application_code ?? 'N/A');
+                    $submittedDate = $item->submitted_at ? 
+                        (is_string($item->submitted_at) ? 
+                            \Carbon\Carbon::parse($item->submitted_at)->format('M d, Y') : 
+                            $item->submitted_at->format('M d, Y')
+                        ) : 'N/A';
+                    
+                    return "<div class='d-flex flex-column'>
+                                <span class='fw-bold text-dark'>{$code}</span>
+                                <span class='text-muted small'>提交: {$submittedDate}</span>
+                            </div>";
+                },
             ],
-    
             [
                 'label' => __('application.column_property'),
                 'type' => 'custom',
                 'render' => function ($item) {
                     $property = $item->property;
                     if (!$property) {
-                        return '-';
+                        return '<span class="text-muted">-</span>';
                     }
     
+                    $propertyName = e($property->property_name ?? '未命名');
                     $address = trim(
                         "{$property->address_street} {$property->address_city}, {$property->address_province} {$property->address_postal_code}");
                     $url = route('properties.show', $property);
     
-                    return "<a href=\"{$url}\" target=\"_blank\">" . e($address) . '</a>';
+                    return "<div class='d-flex flex-column'>
+                                <a href=\"{$url}\" target=\"_blank\" class='text-primary text-decoration-underline'>{$propertyName}</a>
+                                <span class='text-muted small'>" . e($address) . "</span>
+                            </div>";
                 },
             ],
             [
                 'label' => __('application.column_applicant'),
-                'column' => 'applicant.full_name',
+                'type' => 'custom',
+                'render' => function ($item) {
+                    $applicant = $item->applicants->first();
+                    if (!$applicant) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    
+                    $name = e($applicant->full_name ?? 'N/A');
+                    $email = e($applicant->email ?? '');
+                    $phone = e($applicant->phone ?? '');
+                    
+                    return "<div class='d-flex flex-column'>
+                                <span class='fw-bold text-dark'>{$name}</span>
+                                <span class='text-muted small'>{$email}</span>
+                                <span class='text-muted small'>{$phone}</span>
+                            </div>";
+                },
             ],
             [
-                'label' => __('application.column_lease_term'),
-                'column' => 'employment.min_lease_term',
-            ],
-            [
-                'label' => __('application.column_submitted_at'),
-                'column' => 'submitted_at',
-                'sortable' => true,
+                'label' => __('application.column_employment'),
+                'type' => 'custom',
+                'render' => function ($item) {
+                    $employment = $item->employment;
+                    if (!$employment) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    
+                    $employerName = e($employment->employer_name ?? 'N/A');
+                    $jobTitle = e($employment->job_title ?? '');
+                    $monthlyIncome = $employment->monthly_income ? '$' . number_format($employment->monthly_income, 2) . '/月' : 'N/A';
+                    
+                    $employmentInfo = $jobTitle ? "{$employerName} - {$jobTitle}" : $employerName;
+                    
+                    return "<div class='d-flex flex-column'>
+                                <span class='text-dark'>{$employmentInfo}</span>
+                                <span class='text-success small'>{$monthlyIncome}</span>
+                            </div>";
+                },
             ],
             [
                 'label' => __('application.column_reviewer'),
@@ -186,23 +263,34 @@
                 'icon' => 'bi bi-pencil',
                 'group' => '1',
             ],
+            // [
+            //     'label' => __('application.action_delete'),
+            //     'url' => fn($item) => 'javascript:void(0);',
+            //     'icon' => 'bi bi-trash',
+            //     'class' => 'text-danger',
+            //     'onclick' => fn($item) => "submitDelete('" .
+            //         route('rental_applications.destroy', $item->id) .
+            //         "')",
+            //     'group' => '1',
+            // ],
             [
-                'label' => __('application.action_delete'),
+                'label' => ut('modules.application.action_delete'),
                 'url' => fn($item) => 'javascript:void(0);',
                 'icon' => 'bi bi-trash',
-                'class' => 'text-danger',
-                'onclick' => fn($item) => "submitDelete('" .
-                    route('rental_applications.destroy', $item->id) .
-                    "')",
+                'class' => 'record-action text-danger',
+                'action' => 'delete',
                 'group' => '1',
             ],
             [
                 'label' => __('application.action_review'),
                 'icon' => 'bi bi-check-circle',
                 'url' => fn($item) => 'javascript:void(0);',
-                'onclick' => fn($item) => "openReviewStatusModal({$item->id}, '{$item->status}', '" .
-                    e($item->review_notes ?? '') .
-                    "')",
+                'action' => 'review',
+                'data' => [
+                    'id' => fn($item) => $item->id,
+                    'status' => fn($item) => $item->status,
+                    'notes' => fn($item) => $item->review_notes ?? '',
+                ],
                 'group' => '2',
             ],
         ],
@@ -278,10 +366,39 @@
     <script>
         // 审核按钮动作：打开 modal 并填入已有值
         function openReviewStatusModal(id, status, note) {
-            document.getElementById('status_application_id').value = id;
-            document.getElementById('new_status').value = status;
-            document.getElementById('review_notes').value = note;
-            new bootstrap.Modal(document.getElementById('statusReviewModal')).show();
+            console.log('openReviewStatusModal called with:', {id, status, note});
+            
+            const modalElement = document.getElementById('statusReviewModal');
+            console.log('Modal element:', modalElement);
+            
+            if (!modalElement) {
+                console.error('Modal element not found');
+                return;
+            }
+            
+            const idInput = document.getElementById('status_application_id');
+            const statusSelect = document.getElementById('new_status');
+            const notesTextarea = document.getElementById('review_notes');
+            
+            console.log('Form elements:', {idInput, statusSelect, notesTextarea});
+            
+            if (idInput) idInput.value = id;
+            if (statusSelect) statusSelect.value = status;
+            if (notesTextarea) notesTextarea.value = note;
+            
+            try {
+                console.log('Bootstrap available:', typeof bootstrap !== 'undefined');
+                console.log('Bootstrap.Modal available:', typeof bootstrap.Modal !== 'undefined');
+                
+                const modal = new bootstrap.Modal(modalElement);
+                console.log('Modal instance created:', modal);
+                
+                modal.show();
+                console.log('Modal.show() called');
+            } catch (error) {
+                console.error('Error showing modal:', error);
+                console.error('Error stack:', error.stack);
+            }
         }
 
         // 提交审核状态变更表单
@@ -316,6 +433,7 @@
 
         // 启用 Bootstrap Tooltip
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing tooltips');
             document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
                 new bootstrap.Tooltip(el, {
                     placement: 'bottom',

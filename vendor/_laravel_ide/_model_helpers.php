@@ -2978,16 +2978,18 @@ namespace App\Models {
      *
      * @property \Illuminate\Support\Carbon $updated_at
      * @property \Illuminate\Support\Carbon $created_at
-     * @property string|null $expires_at
-     * @property bool|null $is_read
+     * @property \Illuminate\Support\Carbon|null $expires_at
+     * @property boolean|null $is_read
      * @property string|null $action_url
-     * @property string|null $data
+     * @property array|null $data
      * @property string $content
      * @property string $title
-     * @property bool $priority
+     * @property integer $priority
      * @property string $type
      * @property mixed $user_id
-     * @property mixed $notification_id
+     * @property int $notification_id
+     * @property-read mixed $message
+     * @property-read mixed $is_expired
      * @property-read \App\Models\User $user
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereNotificationId($value)
      * @method static \Illuminate\Database\Eloquent\Builder<Notification>|Notification whereUserId($value)

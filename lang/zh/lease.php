@@ -54,4 +54,5 @@ return [
         'download_pdf' => '下载 PDF',
         'generate_pdf' => '生成合同PDF',
     ],
+
 ];

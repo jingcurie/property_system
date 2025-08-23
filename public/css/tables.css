@@ -126,7 +126,7 @@ thead th:last-child {
 
 thead th {
   position: sticky;
-  top: 71px; /* 根据你的筛选区高度调整 */
+  top: 51px; /* 根据你的筛选区高度调整 */
   background: white; /* 覆盖内容 */
-  z-index: 10;
+  z-index: 0;
 }

@@ -213,6 +213,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('applicants', ApplicantController::class);
 
     //notification
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/generate', [NotificationController::class, 'generate']);
     Route::get('/notifications/unread', [NotificationController::class, 'getUnread']);
     Route::put('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
@@ -244,6 +245,7 @@ Route::middleware(['auth'])->group(function () {
     });
 
     Route::post('/leases/{lease}/send-docusign', [LeaseController::class, 'sendDocusign'])->name('leases.sendDocusign');
+    Route::get('/leases/{lease}/get-signers', [LeaseController::class, 'getSigners'])->name('leases.getSigners');
     //webhooks
 
     //owners

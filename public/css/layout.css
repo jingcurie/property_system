@@ -3,11 +3,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  /* border:1px solid red; */
 }
 
 body {
   background-color: #f8f9fa;
   font-size: 0.9rem;
+  overflow-x: hidden;
 }
 
 .main-content {
@@ -165,148 +167,3 @@ body {
     transform: translateX(0);
 }
 
-
-/* 通知弹窗样式 */
-.notification-popup {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    width: 380px;
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 10px;
-    z-index: 1050;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.3s ease;
-    margin-top: 8px;
-}
-
-/* 显示状态 */
-.notification-popup.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* 响应式适配 */
-@media (max-width: 480px) {
-    .notification-popup {
-        width: 320px;
-        right: -20px;
-    }
-}
-
-/* 通知项样式 */
-.notification-item {
-    padding: 12px 0;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    border-radius: 6px;
-    margin: 0 -8px;
-    padding-left: 8px;
-    padding-right: 8px;
-}
-
-.notification-item:hover {
-    background-color: #f8f9fa;
-}
-
-.notification-item.unread {
-    background-color: #e3f2fd;
-    border-left: 3px solid #2196f3;
-    padding-left: 12px;
-}
-
-.notification-item.unread:hover {
-    background-color: #bbdefb;
-}
-
-/* 通知头部 */
-.notification-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-    border-radius: 10px 10px 0 0;
-}
-
-.notification-header h6 {
-    font-weight: 600;
-    letter-spacing: 0.5px;
-}
-
-/* 通知列表区域 */
-.notification-list {
-    max-height: 400px;
-    overflow-y: auto;
-}
-
-.notification-list::-webkit-scrollbar {
-    width: 4px;
-}
-
-.notification-list::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 2px;
-}
-
-.notification-list::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 2px;
-}
-
-.notification-list::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* 通知图标 */
-.notification-item .bi {
-    font-size: 1.2rem;
-    width: 24px;
-    text-align: center;
-}
-
-/* 删除按钮 */
-.notification-item .btn-outline-danger {
-    border: none;
-    background: transparent;
-    color: #dc3545;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-    padding: 4px 8px;
-}
-
-.notification-item:hover .btn-outline-danger {
-    opacity: 1;
-}
-
-.notification-item .btn-outline-danger:hover {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* 空状态样式 */
-.notification-list .text-muted {
-    font-style: italic;
-}
-
-/* 通知徽章动画 */
-#notification_amount {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: translate(-50%, -25%) scale(1); }
-    50% { transform: translate(-50%, -25%) scale(1.1); }
-    100% { transform: translate(-50%, -25%) scale(1); }
-}
-
-/* 通知按钮悬停效果 */
-.btn-light:hover {
-    transform: scale(1.05);
-    transition: transform 0.2s ease;
-}
-
-/* 阴影增强 */
-.notification-popup {
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-}

@@ -239,7 +239,7 @@
 
 @section('content')
     @include('components.pages.index-table', [
-        'pageTitle' => __('property.page_title'),
+        'pageTitle' => ut('modules.property.page_title'),
         'pageIcon' => 'bi bi-houses-fill',
         // 'createUrl' => route('properties.create'),
         // 'createLabel' => __('property.create_label'),
@@ -251,29 +251,41 @@
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-plus-circle',
-                    'label' => __('property.create_label'),
+                    'label' => ut('modules.property.create_title'),
                     'url' => route('properties.create'),
                     'class' => 'btn btn-primary',
                 ],
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-download',
-                    'label' => __('property.export_label'),
+                    'label' => ut('common.export'),
                     'url' => route('properties.export', request()->all()),
                     'class' => 'btn btn-outline-secondary',
+                ],
+                [
+                    'type' => 'button',
+                    'icon' => 'bi bi-arrow-clockwise',
+                    'label' => ut('common.refresh'),
+                    'class' => 'btn btn-outline-secondary',
+                    'onclick' => 'window.location.reload()',
                 ],
             ],
             'selected' => [
                 [
                     'type' => 'dropdown',
                     'icon' => 'bi bi-list',
-                    'label' => '批量操作',
+                    'label' => ut('common.batch_operations'),
                     'class' => 'btn btn-secondary dropdown-toggle',
                     'items' => [
                         [
-                            'label' => '批量删除',
-                            'action' => 'bulk-delete',
+                            'label' => ut('common.batch_delete'),
+                            'action' => 'delete',
                             'icon' => 'bi bi-trash',
+                        ],
+                        [
+                            'label' => ut('common.batch_export'),
+                            'action' => 'export',
+                            'icon' => 'bi bi-download',
                         ],
                     ],
                 ],
@@ -284,57 +296,82 @@
             [
                 'relation' => null,
                 'column' => 'property_name',
-                'label' => __('property.search_fields.property_name'),
+                'label' => ut('modules.property.search_property_name'),
             ],
             [
                 'relation' => null,
                 'column' => 'address_street',
-                'label' => __('property.search_fields.address'),
+                'label' => ut('modules.property.search_address'),
             ],
             [
                 'relation' => null,
                 'column' => 'address_city',
-                'label' => __('property.search_fields.city'),
+                'label' => ut('modules.property.search_city'),
             ],
         ],
     
         'quickFilters' => [
             [
                 'key' => 'status',
-                'label' => __('property.filters.status'),
+                'label' => ut('modules.property.availability_status'),
                 'relation' => 'rentalInfo',
                 'column' => 'availability_status',
-                'options' => [
-                    'Available' => __('property.availability_statuses.Available'),
-                    'Leased' => __('property.availability_statuses.Leased'),
-                    'Under Maintenance' => __('property.availability_statuses.Under_Maintenance'),
-                ],
+                'options' => dict('availability_status', app()->getLocale()),
             ],
         ],
     
         'filterFields' => [
             [
                 'key' => 'rent',
-                'label' => __('property.filters.monthly_rent'),
+                'label' => ut('modules.property.monthly_rent'),
                 'type' => 'number_range',
                 'relation' => 'rentalInfo',
                 'column' => 'monthly_rent',
             ],
             [
                 'key' => 'city',
-                'label' => __('property.filters.city'),
+                'label' => ut('modules.property.city'),
                 'type' => 'text',
                 'column' => 'address_city',
             ],
             [
                 'key' => 'type',
-                'label' => __('property.filters.property_type'),
+                'label' => ut('modules.property.property_type'),
                 'type' => 'select',
                 'column' => 'property_type',
+                'options' => dict('property_type', app()->getLocale()),
+            ],
+            [
+                'key' => 'bedrooms',
+                'label' => ut('modules.property.bedrooms'),
+                'type' => 'select',
+                'relation' => 'feature',
+                'column' => 'bedrooms',
                 'options' => [
-                    'apartment' => __('property.property_types.Apartment'),
-                    'house' => __('property.property_types.House'),
-                    'townhouse' => __('property.property_types.Townhouse'),
+                    '1' => '1 卧室',
+                    '2' => '2 卧室',
+                    '3' => '3 卧室',
+                    '4' => '4+ 卧室',
+                ],
+            ],
+            [
+                'key' => 'square_footage',
+                'label' => ut('modules.property.square_footage'),
+                'type' => 'number_range',
+                'relation' => 'feature',
+                'column' => 'square_footage',
+            ],
+            [
+                'key' => 'parking',
+                'label' => ut('modules.property.parking_spaces'),
+                'type' => 'select',
+                'relation' => 'feature',
+                'column' => 'parking_spaces',
+                'options' => [
+                    '0' => '无停车位',
+                    '1' => '1个停车位',
+                    '2' => '2个停车位',
+                    '3' => '3+个停车位',
                 ],
             ],
         ],
@@ -344,118 +381,187 @@
     
         'columns' => [
             [
-                'label' => __('property.columns.property_name'),
+                'label' => ut('modules.property.column_property_name'),
                 'column' => 'property_name',
                 'type' => 'custom',
                 'render' => function ($item) {
                     $name = e($item->property_name ?? '未命名');
                     $cover = $item->media->firstWhere('is_cover', 1);
                     $address = implode(', ', array_filter([$item->address_city, $item->address_province]));
-    
+
                     $html = '<div class="d-flex align-items-center text-decoration-none gap-3">';
-    
+
                     if ($cover) {
                         $url = url('/media/property/' . $item->property_id . '/' . basename($cover->file_path));
                     } else {
                         $url = asset('images/default_property_cover_image.png');
                     }
-    
-                    $html .=
-                        '<img onclick="openMediaModal(' .
-                        $item->property_id .
-                        ')" src="' .
-                        $url .
-                        '" alt="' .
-                        $name .
-                        '" style="width: 56px; height: 56px; object-fit: cover; object-position: center; border-radius: 15px;" >';
-    
+
+                    $html .= '<div class="position-relative">';
+                    $html .= '<img onclick="openMediaModal(' . $item->property_id . ')" 
+                                   src="' . $url . '" 
+                                   alt="' . $name . '" 
+                                   style="width: 56px; height: 56px; object-fit: cover; object-position: center; border-radius: 15px;" 
+                                   onerror="this.src=\'' . asset('images/default_property_cover_image.png') . '\'">';
+                    $html .= '</div>';
+
                     $html .= '<div class="d-flex flex-column">';
                     $html .= '<span class="text-body fw-medium">' . $name . '</span>';
                     $html .= '<span class="text-muted small">' . e($item->address_street) . '</span>';
                     $html .= '<span class="text-muted small">' . e($address) . '</span>';
                     $html .= '</div></div>';
-    
+
                     return $html;
                 },
-    
                 'sortable' => true,
             ],
             [
-                'label' => __('property.columns.address'),
-                'columns' => ['address_street', 'address_city'],
-                'type' => 'combine',
-                'sortable' => true,
-            ],
-            [
-                'label' => __('property.columns.type'),
+                'label' => ut('modules.property.column_type'),
                 'column' => 'property_type',
+                'type' => 'badge',
+                'badge_map' => dict_colors('property_type'),
                 'sortable' => true,
             ],
             [
-                'label' => __('property.columns.bedrooms_bathrooms'),
+                'label' => ut('modules.property.column_bedrooms_bathrooms'),
                 'type' => 'custom',
-                'render' => fn($item) => ($item->feature->bedrooms ?? '-') .
-                    ' / ' .
-                    ($item->feature->bathrooms ?? '-'),
+                'render' => function($item) {
+                    $bedrooms = $item->feature->bedrooms ?? '-';
+                    $bathrooms = $item->feature->bathrooms ?? '-';
+                    $squareFootage = $item->feature->square_footage ?? null;
+                    
+                    $html = '<div class="d-flex flex-column">';
+                    $html .= '<span class="fw-medium">' . $bedrooms . ' / ' . $bathrooms . '</span>';
+                    if ($squareFootage) {
+                        $html .= '<span class="text-muted small">' . number_format($squareFootage) . ' sq ft</span>';
+                    }
+                    $html .= '</div>';
+                    
+                    return $html;
+                },
                 'sortable' => true,
             ],
             [
-                'label' => __('property.columns.rent'),
+                'label' => ut('modules.property.column_rent'),
                 'column' => 'rentalInfo.monthly_rent',
+                'type' => 'custom',
+                'render' => function($item) {
+                    $rent = $item->rentalInfo->monthly_rent ?? 0;
+                    $deposit = $item->rentalInfo->security_deposit ?? 0;
+                    $availableDate = $item->rentalInfo->available_date ?? null;
+                    
+                    $html = '<div class="d-flex flex-column">';
+                    if ($rent > 0) {
+                        $html .= '<span class="fw-bold text-success">$' . number_format($rent, 2) . '</span>';
+                        if ($deposit > 0) {
+                            $html .= '<span class="text-muted small">押金: $' . number_format($deposit, 2) . '</span>';
+                        }
+                    } else {
+                        $html .= '<span class="text-muted">-</span>';
+                    }
+                    if ($availableDate) {
+                        $html .= '<span class="text-info small">可用: ' . \Carbon\Carbon::parse($availableDate)->format('M d') . '</span>';
+                    }
+                    $html .= '</div>';
+                    
+                    return $html;
+                },
                 'sortable' => true,
             ],
             [
-                'label' => __('property.columns.status'),
+                'label' => ut('modules.property.column_status'),
                 'column' => 'rentalInfo.availability_status',
                 'type' => 'badge',
                 'badge_map' => [
                     'Available' => 'success',
                     'Leased' => 'secondary',
                     'Under Maintenance' => 'warning',
+                    'Reserved' => 'info',
                 ],
                 'sortable' => true,
             ],
             [
-                'label' => __('property.columns.owners'),
+                'label' => ut('modules.property.column_owners'),
                 'type' => 'custom',
                 'render' => function ($item) {
                     if (!$item->owners || $item->owners->isEmpty()) {
                         return '<span class="text-muted">-</span>';
                     }
-    
+
                     $owners = $item->owners->map(function ($owner) {
-                            return e(trim($owner->first_name . ' ' . $owner->last_name));
-                        })->implode(' / ');
-    
+                        $name = trim($owner->first_name . ' ' . $owner->last_name);
+                        $percentage = $owner->pivot->ownership_percentage ?? null;
+                        
+                        if ($percentage) {
+                            return e($name) . ' (' . $percentage . '%)';
+                        }
+                        return e($name);
+                    })->implode(' / ');
+
                     return '<div class="d-flex align-items-center">
-                                            <i class="bi bi-person-badge me-2 text-secondary"></i>
-                                            <span>' .
-                        $owners .
-                        '</span>
-                                        </div>';
+                                <i class="bi bi-person-badge me-2 text-secondary"></i>
+                                <span class="small">' . $owners . '</span>
+                            </div>';
+                },
+            ],
+            [
+                'label' => ut('modules.property.column_features'),
+                'type' => 'custom',
+                'render' => function ($item) {
+                    $features = [];
+                    
+                    // 停车信息
+                    if ($item->feature->parking_spaces ?? 0) {
+                        $features[] = '<i class="bi bi-car-front text-primary" title="停车位"></i> ' . $item->feature->parking_spaces;
+                    }
+                    
+                    // 设施信息
+                    if ($item->amenity) {
+                        if ($item->amenity->has_gym) $features[] = '<i class="bi bi-dumbbell text-success" title="健身房"></i>';
+                        if ($item->amenity->has_pool) $features[] = '<i class="bi bi-water text-info" title="游泳池"></i>';
+                        if ($item->amenity->has_balcony) $features[] = '<i class="bi bi-sun text-warning" title="阳台"></i>';
+                    }
+                    
+                    if (empty($features)) {
+                        return '<span class="text-muted">-</span>';
+                    }
+                    
+                    return '<div class="d-flex gap-1">' . implode('', $features) . '</div>';
                 },
             ],
         ],
     
         'actions' => [
             [
-                'label' => __('property.actions.view'),
+                'label' => ut('modules.property.action_view'),
                 'url' => fn($item) => route('properties.show', $item->property_id),
                 'icon' => 'bi bi-eye',
+                'class' => 'text-primary',
             ],
             [
-                'label' => __('property.actions.edit'),
+                'label' => ut('modules.property.action_edit'),
                 'url' => fn($item) => route('properties.edit', $item->property_id),
                 'icon' => 'bi bi-pencil-square',
+                'class' => 'text-warning',
             ],
             [
-                'label' => __('property.actions.delete'),
+                'label' => ut('modules.property.action_application_management'),
+                'url' => fn($item) => route('rental_applications.index', ['property_id' => $item->property_id]),
+                'icon' => 'bi bi-file-earmark-text',
+                'class' => 'text-info',
+            ],
+            [
+                'label' => ut('modules.property.action_media_management'),
+                'url' => fn($item) => 'javascript:openMediaModal(' . $item->property_id . ')',
+                'icon' => 'bi bi-images',
+                'class' => 'text-secondary',
+            ],
+            [
+                'label' => ut('modules.property.action_delete'),
                 'url' => fn($item) => 'javascript:void(0);',
                 'icon' => 'bi bi-trash',
-                'class' => 'text-danger',
-                'onclick' => fn($item) => "deleteCurrentRecord('" .
-                    route('properties.destroy', $item->property_id) .
-                    "', {$item->property_id})",
+                'class' => 'record-action text-danger',
+                'action' => 'delete'
             ],
         ],
     
@@ -463,5 +569,6 @@
         'routeName' => 'properties.index',
         'partialsForfilter' => 'components.filters.filter_fields',
         'module' => 'properties',
+        'countPerPage' => 25,
     ])
 @endsection

@@ -162,6 +162,10 @@ return [
         'monthly_rent' => 'Monthly Rent',
         'city' => 'City',
         'property_type' => 'Property Type',
+        'bedrooms' => 'Bedrooms',
+        'availability_status' => 'Availability Status',
+        'square_footage' => 'Square Footage',
+        'parking_spaces' => 'Parking Spaces',
     ],
 
     // 列表列标题
@@ -174,6 +178,8 @@ return [
         'rent' => 'Rent',
         'status' => 'Status',
         'owner' => 'Owner',
+        'owners' => 'Owners',
+        'features' => 'Features',
     ],
 
     // 操作按钮

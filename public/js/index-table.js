@@ -33,29 +33,81 @@ function openMediaModal(propertyId) {
 }
 
 // {{-- ============================================ --}}
-// {{-- 2. 软删除功能（单个 + 批量） --}}
+// {{-- 2. 单记录和批量记录删，恢复和物理删除处理行为 --}}
 // {{-- ============================================ --}}
+function recordAction(action, ids, module) {
+  const isBulk = Array.isArray(ids) && ids.length > 0;
+  if (!Array.isArray(ids)) ids = [ids]; // 单条转数组
 
-// 删除单条记录
-function deleteCurrentRecord(url, id) {
-  showConfirm("确定要删除该记录吗？", function () {
+  // 根据 action 自动生成 URL
+  let url;
+  if (isBulk) {
+    // 批量操作
+    if (action === "delete") {
+      url = `/${module}/batch-delete`; // 批量软删除
+    } else if (action === "restore") {
+      url = `/trash/${module}/bulk-restore`;
+    } else if (action === "force_delete") {
+      url = `/trash/${module}/bulk-force-delete`;
+    }
+  } else {
+    // 单个操作
+    if (action === "delete") {
+      url = `/${module}/${ids}`; // 单条软删除（DELETE 方法）
+    } else if (action === "restore") {
+      url = `/trash/${module}/${ids}/restore`; // 单条恢复
+    } else if (action === "force_delete") {
+      url = `/trash/${module}/${ids}/force-delete`; // 单条彻底删除
+    }
+  }
+
+  // alert(isBulk + " " + action + " " + url);
+
+  const count = ids.length;
+  const confirmText = {
+    delete: isBulk
+      ? `确定要删除选中的 ${count} 条记录吗？`
+      : "确定要删除该记录吗？",
+    restore: isBulk
+      ? `确定要恢复选中的 ${count} 条记录吗？`
+      : "确定要恢复该记录吗？",
+    force_delete: isBulk
+      ? `确定要彻底删除选中的 ${count} 条记录吗？此操作不可撤销！`
+      : "确定要彻底删除该记录吗？此操作不可撤销！",
+  }[action];
+
+  showConfirm(confirmText, function () {
     $.ajax({
       url: url,
       type: "POST",
       data: {
-        _method: "DELETE",
+        ids: ids,
+        _method: !isBulk && action === "delete" ? "DELETE" : "POST",
         _token: $('meta[name="csrf-token"]').attr("content"),
       },
       success: function (res) {
-        // 从DOM移除该行
-        $("#row-" + id).fadeOut(300, function () {
-          $(this).remove();
-        });
-        showToast(res.message || "删除成功", "success", "top-center");
+        // 成功提示
+        const message = isBulk
+          ? `成功${
+              action === "delete"
+                ? "删除"
+                : action === "restore"
+                ? "恢复"
+                : "彻底删除"
+            } ${ids.length} 条记录`
+          : res.message ||
+            (action === "delete"
+              ? "删除成功"
+              : action === "restore"
+              ? "恢复成功"
+              : "彻底删除成功");
+
+        showToast(message, "success", "top-center");
+        refreshTable();
       },
       error: function (xhr) {
         showToast(
-          xhr.responseJSON?.message || "删除失败",
+          xhr.responseJSON?.message || "操作失败",
           "danger",
           "top-center"
         );
@@ -64,90 +116,17 @@ function deleteCurrentRecord(url, id) {
   });
 }
 
-// 批量删除功能
-document.addEventListener("DOMContentLoaded", () => {
-  const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+$(document).on("click", ".record-action", function (e) {
+  e.preventDefault();
 
-  document
-    .querySelector('[data-action="bulk-delete"]')
-    ?.addEventListener("click", function (e) {
-      e.preventDefault();
-
-      const selectedCheckboxes = document.querySelectorAll(
-        'input[name="selected_ids[]"]:checked'
-      );
-      const ids = Array.from(selectedCheckboxes).map((cb) => cb.value);
-
-      if (ids.length === 0) {
-        showToast("请选择要删除的记录", "warning", "top-center");
-        return;
-      }
-
-      showConfirm("确定要删除选中的记录吗？", function () {
-        fetch("/properties/batch-delete", {
-          // 注意：这里URL是硬编码的，可能需要动态化
-          method: "POST",
-          headers: {
-            "X-CSRF-TOKEN": csrfToken,
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            selected_ids: ids,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              ids.forEach((id) => {
-                const row = document.querySelector(`#row-${id}`);
-                if (row) row.remove();
-              });
-              showToast(`${data.message}`, "success", "top-center");
-            } else {
-              showToast(data.message || "删除失败", "danger", "top-center");
-            }
-          })
-          .catch(() => {
-            showToast("请求失败，请稍后再试", "danger", "top-center");
-          });
-      });
-    });
+  const action = $(this).data("action"); // delete / restore / force_delete
+  const id = $(this).data("id");
+  recordAction(action, id, window.moduleName);
 });
 
-// {{-- ============================================ --}}
-// {{-- 回收站恢复（单个 + 批量） --}}
-// {{-- ============================================ --}}
-
-function restoreRecord(url, id) {
-  showConfirm("确定要恢复该记录吗？", function () {
-    $.ajax({
-      url: url,
-      type: "POST",
-      data: {
-        _token: $('meta[name="csrf-token"]').attr("content"),
-      },
-      success: function (res) {
-        // 从 DOM 移除该行
-        $("#row-" + id).fadeOut(300, function () {
-          $(this).remove();
-        });
-        showToast(res.message || "恢复成功", "success", "top-center");
-      },
-      error: function (xhr) {
-        showToast(
-          xhr.responseJSON?.message || "恢复失败",
-          "danger",
-          "top-center"
-        );
-      },
-    });
-  });
-}
-
-//回收站批量恢复和物理删除合二为一
-function bulkAction(action, module) {
-  let selectedIds = $("input[name='selected_ids[]']:checked")
+$(document).on("click", ".bulk-action", function () {
+  const action = $(this).data("action");
+  const selectedIds = $("input[name='selected_ids[]']:checked")
     .map(function () {
       return $(this).val();
     })
@@ -158,87 +137,20 @@ function bulkAction(action, module) {
     return;
   }
 
-  let url =
-    action === "restore"
-      ? `/trash/${module}/bulk-restore`
-      : `/trash/${module}/bulk-force-delete`;
-
-  let confirmText =
-    action === "restore"
-      ? "确定要恢复选中的记录吗？"
-      : "确定要彻底删除选中的记录吗？此操作不可撤销！";
-
-  showConfirm(confirmText, function () {
-    $.ajax({
-      url: url,
-      type: "POST",
-      data: {
-        ids: selectedIds,
-        _token: $('meta[name="csrf-token"]').attr("content"),
-      },
-      success: function (res) {
-        showToast(res.message || "操作成功", "success", "top-center");
-
-        // 移除选中的行
-        selectedIds.forEach(function (id) {
-          $("#row-" + id).fadeOut(300, function () {
-            $(this).remove();
-          });
-        });
-      },
-      error: function (xhr) {
-        showToast(
-          xhr.responseJSON?.error || "操作失败",
-          "danger",
-          "top-center"
-        );
-      },
-    });
-  });
-}
-
-$(document).on("click", ".dropdown-item[data-action]", function (e) {
-  e.preventDefault();
-
-  let action = $(this).data("action"); // 可能是 bulkRestore 或 bulkForceDelete
-  let module = window.moduleName || ''; // 后端 Blade 传入的 module 名称
-
-  if (action === "bulkRestore") {
-    bulkAction("restore", module);
-  } else if (action === "bulkForceDelete") {
-    bulkAction("force_delete", module);
-  }
+  recordAction(action, selectedIds, window.moduleName);
 });
 
-// {{-- ============================================ --}}
-// {{-- 回收站硬删除恢复（单个 + 批量） --}}
-// {{-- ============================================ --}}
+function refreshTable(pageUrl = null) {
+  const url = pageUrl || window.location.href;
 
-function forceDeleteRecord(url, id) {
-  showConfirm("确定要彻底删除该记录吗？此操作不可撤销！", function () {
-    $.ajax({
-      url: url,
-      type: "POST",
-      data: {
-        // _method: "DELETE",
-        _token: $('meta[name="csrf-token"]').attr("content"),
-      },
-      success: function (res) {
-        // 从 DOM 移除该行
-        $("#row-" + id).fadeOut(300, function () {
-          $(this).remove();
-        });
-        showToast(res.message || "彻底删除成功", "success", "top-center");
-      },
-      error: function (xhr) {
-        showToast(
-          xhr.responseJSON?.message || "删除失败",
-          "danger",
-          "top-center"
-        );
-      },
-    });
+  $.get(url, function (response) {
+    // 从返回的 HTML 中提取 tbody
+    const newTbody = $(response).find("#refresh-part").html();
+    $("#refresh-part").html(newTbody);
+    console.log(newTbody);
   });
+
+  updateTableHeaderStickyOffset();
 }
 
 // {{-- ============================================ --}}
@@ -300,13 +212,25 @@ function searchAndFilters(config) {
     }
   }
 
-  // 筛选器初始化和事件绑定
+  // // 筛选器初始化和事件绑定
+  // document.addEventListener("DOMContentLoaded", () => {
+  //   document.querySelectorAll(".filter-checkbox").forEach((el) => {
+  //     const key = el.value;
+  //     el.checked = activeFilters.has(key);
+  //     el.addEventListener("change", () => syncFilterState(key));
+  //   });
+  //   setTimeout(syncFilterVisibility, 0);
+  // });
+  // 使用事件委托
+  document.addEventListener("change", (e) => {
+    if (e.target.classList.contains("filter-checkbox")) {
+      const key = e.target.value;
+      syncFilterState(key);
+    }
+  });
+
+  // 页面初始化时刷新可见性
   document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".filter-checkbox").forEach((el) => {
-      const key = el.value;
-      el.checked = activeFilters.has(key);
-      el.addEventListener("change", () => syncFilterState(key));
-    });
     setTimeout(syncFilterVisibility, 0);
   });
 
@@ -357,102 +281,28 @@ function updateToolbarVisibility() {
 }
 
 // 复选框事件绑定
-document.addEventListener("DOMContentLoaded", () => {
-  const checkboxes = document.querySelectorAll('input[name="selected_ids[]"]');
-  const selectAll = document.getElementById("select-all");
-
-  // 单个复选框变化时更新工具栏
-  checkboxes.forEach((cb) =>
-    cb.addEventListener("change", updateToolbarVisibility)
-  );
-
-  // 全选复选框功能
-  selectAll?.addEventListener("change", () => {
-    checkboxes.forEach((cb) => (cb.checked = selectAll.checked));
+document.addEventListener("change", (e) => {
+  if (e.target.matches('input[name="selected_ids[]"]')) {
     updateToolbarVisibility();
-  });
+  }
+
+  if (e.target.matches("#select-all")) {
+    const selectAll = e.target;
+    document
+      .querySelectorAll('input[name="selected_ids[]"]')
+      .forEach((cb) => (cb.checked = selectAll.checked));
+    updateToolbarVisibility();
+  }
 });
 
-// {{-- ============================================ --}}
-// {{-- 5. 用户状态切换功能（启用/禁用用户） --}}
-// {{-- ============================================ --}}
+document.querySelectorAll('.row-checkbox').forEach(checkbox => {
+  checkbox.addEventListener('change', () => {
+    const allCheckboxes = document.querySelectorAll('.row-checkbox');
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectAll = document.querySelector('#select-all');
 
-document.addEventListener("DOMContentLoaded", function () {
-  const csrfToken = document
-    .querySelector('meta[name="csrf-token"]')
-    ?.getAttribute("content");
-
-  // 用户状态切换开关
-  document.querySelectorAll(".toggle-active").forEach(function (checkbox) {
-    checkbox.addEventListener("change", function () {
-      const url = this.dataset.url;
-      const userId = this.dataset.id;
-      const role = this.dataset.role;
-      const isActive = this.checked ? 1 : 0;
-      const checkboxEl = this;
-
-      // 超级管理员不允许修改状态
-      if (role === "admin") {
-        Swal.fire({
-          icon: "warning",
-          title: "无法修改",
-          text: "超级管理员状态不允许修改！",
-        });
-        checkboxEl.checked = !checkboxEl.checked;
-        return;
-      }
-
-      // 确认操作
-      const targetStatus = isActive ? "启用" : "禁用";
-      const message = `确定要将该用户状态修改为【${targetStatus}】吗？`;
-
-      Swal.fire({
-        icon: "question",
-        title: "请确认操作",
-        text: message,
-        showCancelButton: true,
-        confirmButtonText: "确定",
-        cancelButtonText: "取消",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          // 执行状态更新
-          fetch(url, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": csrfToken,
-            },
-            body: JSON.stringify({
-              is_active: isActive,
-            }),
-          })
-            .then((response) => {
-              if (!response.ok) throw new Error("操作失败");
-              return response.json();
-            })
-            .then((data) => {
-              console.log(data.message || "状态更新成功");
-              // 更新状态文本
-              const statusTextEl = checkboxEl
-                .closest(".form-check")
-                .querySelector(".status-text");
-              if (statusTextEl) {
-                statusTextEl.textContent = isActive ? "启用" : "禁用";
-              }
-            })
-            .catch((error) => {
-              Swal.fire({
-                icon: "error",
-                title: "状态更新失败",
-                text: "请稍后重试",
-              });
-              checkboxEl.checked = !checkboxEl.checked;
-            });
-        } else {
-          checkboxEl.checked = !checkboxEl.checked;
-        }
-      });
-    });
+    // 如果所有行都选中，则全选也选中，否则取消
+    selectAll.checked = allCheckboxes.length === checkedBoxes.length;
   });
 });
 
@@ -460,15 +310,24 @@ document.addEventListener("DOMContentLoaded", function () {
 // {{-- 6. 表格行点击跳转功能 --}}
 // {{-- ============================================ --}}
 
-// 点击表格行跳转（排除按钮、链接等元素）
 function handleRowClick(event, url) {
   const ignoreTags = ["A", "BUTTON", "SVG", "INPUT", "LABEL", "IMG"];
+
+  // 1️⃣ 如果是忽略的元素，直接返回
   if (
     ignoreTags.includes(event.target.tagName) ||
     event.target.closest(".no-row-click")
   ) {
     return;
   }
+
+  // 2️⃣ 检查是否点击了第一列（checkbox 所在列）
+  const cell = event.target.closest("td");
+  if (cell && cell.cellIndex === 0) {
+    return; // 第一列（通常是 checkbox 列）不跳转
+  }
+
+  // 3️⃣ 允许跳转
   window.location.href = url;
 }
 
@@ -519,4 +378,43 @@ document.querySelectorAll(".quick-filter-deselect-all").forEach((btn) => {
     const checkboxes = document.querySelectorAll(".quick-filter-" + key);
     checkboxes.forEach((cb) => (cb.checked = false));
   });
+});
+
+function updateTableHeaderStickyOffset() {
+  const stickyHeader = document.querySelector(".sticky-top");
+  const tableHeaders = document.querySelectorAll("thead th");
+
+  if (stickyHeader && tableHeaders.length) {
+    const offset = stickyHeader.offsetHeight || 0;
+    tableHeaders.forEach((th) => {
+      th.style.top = `${offset}px`;
+    });
+  }
+}
+
+// {{-- ============================================ --}}
+// {{-- 8. Action点击处理 --}}
+// {{-- ============================================ --}}
+
+document.addEventListener('click', function(e) {
+  if (e.target.closest('.dropdown-item')) {
+    const actionItem = e.target.closest('.dropdown-item');
+    const action = actionItem.getAttribute('data-action');
+    
+    if (action === 'review') {
+      e.preventDefault();
+      const id = actionItem.getAttribute('data-id');
+      const status = actionItem.getAttribute('data-status');
+      const notes = actionItem.getAttribute('data-notes') || '';
+      
+      console.log('Review action clicked:', {id, status, notes});
+      
+      // 调用审核modal函数
+      if (typeof openReviewStatusModal === 'function') {
+        openReviewStatusModal(id, status, notes);
+      } else {
+        console.error('openReviewStatusModal function not found');
+      }
+    }
+  }
 });

@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name', __('layout.default_title')) }}</title>
+    <title>{{ config('app.name', ut('layout.default_title')) }}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
@@ -31,6 +31,8 @@
     <link href="{{ asset('css/tooltip.css') }}" rel="stylesheet">
     <link href="{{ asset('css/roleCard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/ownerInfoCard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/notification-panel.css') }}" rel="stylesheet">
+
     @stack('styles')
 </head>
 
@@ -40,7 +42,7 @@
             <div class="sidebar-header">
                 <a href="{{ route('dashboard') }}" class="sidebar-logo">
                     <i class="bi bi-house-door-fill fs-4 me-2"></i>
-                    <span class="app-name d-none d-md-inline">{{ config('app.name', __('layout.app_name')) }}</span>
+                    <span class="app-name d-none d-md-inline">{{ config('app.name', ut('layout.app_name')) }}</span>
                 </a>
 
                 <div class="sidebar-toggle" onclick="toggleSidebar()">
@@ -56,17 +58,17 @@
                         onclick="handleMainMenuClick(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-speedometer2"></i>
-                            <span>{{ __('menu.dashboard') }}</span>
+                            <span>{{ ut('menu.dashboard') }}</span>
                         </div>
                     </a>
                 </li>
 
                 {{-- rentals - 有子菜单的主菜单 --}}
-                <li class="nav-item has-submenu {{ request()->routeIs('properties.*') ? 'active' : '' }}">
+                <li class="nav-item has-submenu {{ request()->routeIs('properties.*', 'owners.*', 'tenants.*', 'events.*') ? 'active' : '' }}">
                     <a href="javascript:void(0)" class="nav-link" onclick="toggleSubmenu(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-buildings"></i>
-                            <span>{{ __('menu.rental') }}</span>
+                            <span>{{ ut('menu.rental') }}</span>
                         </div>
                         <i class="bi bi-chevron-down nav-arrow"></i>
                     </a>
@@ -74,41 +76,42 @@
                         <a href="{{ route('properties.index') }}"
                             class="submenu-item {{ request()->routeIs('properties.index') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-house-check"></i> {{ __('menu.properties') }}
+                            <i class="bi bi-house-check"></i> {{ ut('menu.properties') }}
                         </a>
                         <a href="{{ route('owners.index') }}" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-person-badge"></i> {{ __('menu.rental_owners') }}
+                            <i class="bi bi-person-badge"></i> {{ ut('menu.rental_owners') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-person-fill-check"></i> {{ __('menu.tenants') }}
+                            <i class="bi bi-person-fill-check"></i> {{ ut('menu.tenants') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-calendar2-week"></i> {{ __('menu.events') }}
+                            <i class="bi bi-calendar2-week"></i> {{ ut('menu.events') }}
                         </a>
                     </div>
                     <div class="floating-menu">
-                        <a href="{{ route('properties.index') }}" class="submenu-item"
+                        <a href="{{ route('properties.index') }}" 
+                            class="submenu-item {{ request()->routeIs('properties.index') ? 'active' : '' }}"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-house-check"></i> {{ __('menu.properties') }}
+                            <i class="bi bi-house-check"></i> {{ ut('menu.properties') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-person-badge"></i> {{ __('menu.rental_owners') }}
+                            <i class="bi bi-person-badge"></i> {{ ut('menu.rental_owners') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-person-fill-check"></i> {{ __('menu.tenants') }}
+                            <i class="bi bi-person-fill-check"></i> {{ ut('menu.tenants') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-calendar2-week"></i> {{ __('menu.events') }}
+                            <i class="bi bi-calendar2-week"></i> {{ ut('menu.events') }}
                         </a>
                     </div>
                 </li>
 
                 {{-- Leasing --}}
-                <li class="nav-item has-submenu {{ request()->routeIs('rental_applications.*') ? 'active' : '' }}">
+                <li class="nav-item has-submenu {{ request()->routeIs('rental_applications.*', 'applicants.*', 'leases.*', 'draft_leases.*', 'lease_renewals.*', 'active_leases.*', 'terminated_leases.*') ? 'active' : '' }}">
                     <a href="javascript:void(0)" class="nav-link" onclick="toggleSubmenu(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-pencil-square"></i>
-                            <span>{{ __('menu.leasing') }}</span>
+                            <span>{{ ut('menu.leasing') }}</span>
                         </div>
                         <i class="bi bi-chevron-down nav-arrow"></i>
                     </a>
@@ -116,28 +119,53 @@
                         <a href="{{ route('rental_applications.index') }}"
                             class="submenu-item {{ request()->routeIs('rental_applications.index') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-clipboard-check"></i> {{ __('menu.applications') }}
+                            <i class="bi bi-clipboard-check"></i> {{ ut('menu.applications') }}
                         </a>
-                        <a href="{{ route('applicants.index') }}" class="submenu-item"
+                        <a href="{{ route('applicants.index') }}"
+                            class="submenu-item {{ request()->routeIs('applicants.index') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
+                            <i class="bi bi-person-lines-fill"></i> {{ ut('menu.applicants') }}
                         </a>
                         <a href="{{ route('leases.index') }}" class="submenu-item"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.draft_leases') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleSubmenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.lease_renewals') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleSubmenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.active_leases') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleSubmenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.terminated_leases') }}
                         </a>
                     </div>
                     <div class="floating-menu">
                         <a href="{{ route('rental_applications.index') }}" class="submenu-item"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-clipboard-check"></i> {{ __('menu.applications') }}
+                            <i class="bi bi-clipboard-check"></i> {{ ut('menu.applications') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-person-lines-fill"></i> {{ __('menu.applicants') }}
+                            <i class="bi bi-person-lines-fill"></i> {{ ut('menu.applicants') }}
                         </a>
                         <a href="{{ route('leases.index') }}" class="submenu-item"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-journal-check"></i> {{ __('menu.leasing_contracts') }}
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.draft_leases') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleFloatingMenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.lease_renewals') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleFloatingMenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.active_leases') }}
+                        </a>
+                        <a href="{{ route('leases.index') }}" class="submenu-item"
+                            onclick="handleFloatingMenuClick(this)">
+                            <i class="bi bi-journal-check"></i> {{ ut('menu.terminated_leases') }}
                         </a>
                     </div>
                 </li>
@@ -149,7 +177,7 @@
                         onclick="handleMainMenuClick(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-folder2-open"></i>
-                            <span>{{ __('menu.files') }}</span>
+                            <span>{{ ut('menu.files') }}</span>
                         </div>
                         <i class="arrow-placeholder"></i>
                     </a>
@@ -160,30 +188,30 @@
                     <a href="javascript:void(0)" class="nav-link" onclick="toggleSubmenu(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-tools"></i>
-                            <span>{{ __('menu.maintenance') }}</span>
+                            <span>{{ ut('menu.maintenance') }}</span>
                         </div>
                         <i class="bi bi-chevron-down nav-arrow"></i>
                     </a>
                     <div class="submenu">
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-wrench"></i> {{ __('menu.work_orders') }}
+                            <i class="bi bi-wrench"></i> {{ ut('menu.work_orders') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-hammer"></i> {{ __('menu.repairs') }}
+                            <i class="bi bi-hammer"></i> {{ ut('menu.repairs') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-people"></i> {{ __('menu.vendors') }}
+                            <i class="bi bi-people"></i> {{ ut('menu.vendors') }}
                         </a>
                     </div>
                     <div class="floating-menu">
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-wrench"></i> {{ __('menu.work_orders') }}
+                            <i class="bi bi-wrench"></i> {{ ut('menu.work_orders') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-hammer"></i> {{ __('menu.repairs') }}
+                            <i class="bi bi-hammer"></i> {{ ut('menu.repairs') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-people"></i> {{ __('menu.vendors') }}
+                            <i class="bi bi-people"></i> {{ ut('menu.vendors') }}
                         </a>
                     </div>
                 </li>
@@ -193,30 +221,30 @@
                     <a href="javascript:void(0)" class="nav-link" onclick="toggleSubmenu(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-graph-up"></i>
-                            <span>{{ __('menu.financial') }}</span>
+                            <span>{{ ut('menu.financial') }}</span>
                         </div>
                         <i class="bi bi-chevron-down nav-arrow"></i>
                     </a>
                     <div class="submenu">
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-arrow-up-circle"></i> {{ __('menu.income') }}
+                            <i class="bi bi-arrow-up-circle"></i> {{ ut('menu.income') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-arrow-down-circle"></i> {{ __('menu.expense') }}
+                            <i class="bi bi-arrow-down-circle"></i> {{ ut('menu.expense') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-file-earmark-bar-graph"></i> {{ __('menu.reports') }}
+                            <i class="bi bi-file-earmark-bar-graph"></i> {{ ut('menu.reports') }}
                         </a>
                     </div>
                     <div class="floating-menu">
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-arrow-up-circle"></i> {{ __('menu.income') }}
+                            <i class="bi bi-arrow-up-circle"></i> {{ ut('menu.income') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-arrow-down-circle"></i> {{ __('menu.expense') }}
+                            <i class="bi bi-arrow-down-circle"></i> {{ ut('menu.expense') }}
                         </a>
                         <a href="#" class="submenu-item" onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-file-earmark-bar-graph"></i> {{ __('menu.reports') }}
+                            <i class="bi bi-file-earmark-bar-graph"></i> {{ ut('menu.reports') }}
                         </a>
                     </div>
                 </li>
@@ -227,7 +255,7 @@
                     <a href="javascript:void(0)" class="nav-link" onclick="toggleSubmenu(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-building"></i>
-                            <span>{{ __('menu.user') }}</span>
+                            <span>{{ ut('menu.user') }}</span>
                         </div>
                         <i class="bi bi-chevron-down nav-arrow"></i>
                     </a>
@@ -235,41 +263,43 @@
                         <a href="{{ route('users.index') }}"
                             class="submenu-item {{ request()->routeIs('users.*') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-people"></i> {{ __('menu.users') }}
+                            <i class="bi bi-people"></i> {{ ut('menu.users') }}
                         </a>
                         <a href="{{ route('roles.index') }}"
                             class="submenu-item {{ request()->routeIs('roles.*') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-person-gear"></i> {{ __('menu.roles') }}
+                            <i class="bi bi-person-gear"></i> {{ ut('menu.roles') }}
                         </a>
                         <a href="{{ route('permissions.index') }}"
                             class="submenu-item {{ request()->routeIs('permissions.*') ? 'active' : '' }}"
                             onclick="handleSubmenuClick(this)">
-                            <i class="bi bi-shield-lock"></i> {{ __('menu.permissions') }}
+                            <i class="bi bi-shield-lock"></i> {{ ut('menu.permissions') }}
                         </a>
                     </div>
                     <div class="floating-menu">
                         <a href="{{ route('users.index') }}" class="submenu-item"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-people"></i> {{ __('menu.users') }}
+                            <i class="bi bi-people"></i> {{ ut('menu.users') }}
                         </a>
                         <a href="{{ route('roles.index') }}" class="submenu-item"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-person-gear"></i> {{ __('menu.roles') }}
+                            <i class="bi bi-person-gear"></i> {{ ut('menu.roles') }}
                         </a>
                         <a href="{{ route('permissions.index') }}" class="submenu-item"
                             onclick="handleFloatingMenuClick(this)">
-                            <i class="bi bi-shield-lock"></i> {{ __('menu.permissions') }}
+                            <i class="bi bi-shield-lock"></i> {{ ut('menu.permissions') }}
                         </a>
                     </div>
                 </li>
 
                 {{-- Trash --}}
                 <li class="nav-item {{ request()->routeIs('trash.*') ? 'active' : '' }}">
-                    <a href="{{ route('trash.index') }}" class="nav-link {{ request()->routeIs('trash.*') ? 'active' : '' }}" onclick="handleMainMenuClick(this)">
+                    <a href="{{ route('trash.index') }}"
+                        class="nav-link {{ request()->routeIs('trash.*') ? 'active' : '' }}"
+                        onclick="handleMainMenuClick(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-trash3"></i>
-                            <span>{{ __('menu.trash') }}</span>
+                            <span>{{ ut('menu.trash') }}</span>
                         </div>
                         <i class="arrow-placeholder"></i>
                     </a>
@@ -280,7 +310,7 @@
                     <a href="#" class="nav-link" onclick="handleMainMenuClick(this)">
                         <div class="nav-link-content">
                             <i class="bi bi-gear"></i>
-                            <span>{{ __('menu.setting') }}</span>
+                            <span>{{ ut('menu.setting') }}</span>
                         </div>
                         <i class="arrow-placeholder"></i>
                     </a>
@@ -296,7 +326,7 @@
                         class="nav-link">
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-box-arrow-right"></i>
-                            <span>{{ __('menu.logout') }}</span>
+                            <span>{{ ut('menu.logout') }}</span>
                         </div>
                         <i class="arrow-placeholder"></i>
                     </a>
@@ -329,7 +359,7 @@
                 <!-- 左侧欢迎区域 -->
                 <div class="d-flex align-items-center">
                     <div class="welcome-section">
-                        <h6 class="mb-0 text-primary fw-bold">{{ __('layout.welcome_message') }}</h6>
+                        <h6 class="mb-0 text-primary fw-bold">{{ ut('layout.welcome_message') }}</h6>
                         <small class="text-muted">{{ now()->format('l, F j, Y') }}</small>
                     </div>
                 </div>
@@ -340,7 +370,7 @@
                         <i
                             class="bi bi-search position-absolute top-50 start-0 translate-middle-y text-muted ms-3"></i>
                         <input type="text" class="form-control ps-5 border-0 bg-light rounded-pill"
-                            placeholder="{{ __('layout.search_placeholder') }}" style="width: 300px;">
+                            placeholder="{{ ut('layout.search_placeholder') }}" style="width: 300px;">
                     </div>
                 </div>
 
@@ -352,7 +382,7 @@
                     <!-- 通知按钮 -->
                     <div class="position-relative">
                         <button class="btn btn-light rounded-circle p-1 border-0 shadow-sm"
-                            onclick="toggleNotifications()" style="width: 38px; height: 38px;">
+                            onclick="toggleNotificationPanel()" style="width: 38px; height: 38px;">
                             <i class="bi bi-bell fs-6" style="transform: translate(50%, 0%) !important;"></i>
                             <span id="notification_amount"
                                 class="position-absolute top-0 start-100 translate-middle badge bg-danger rounded-pill"
@@ -362,7 +392,7 @@
 
                     <!-- 系统设置 -->
                     <a href="/" class="btn btn-light rounded-circle p-1 border-0 shadow-sm"
-                        title="{{ __('layout.settings') }}" style="width: 38px; height: 38px;">
+                        title="{{ ut('layout.settings') }}" style="width: 38px; height: 38px;">
                         <i class="bi bi-gear fs-6" style="transform: translate(50%, 0%) !important;"></i>
                     </a>
 
@@ -388,15 +418,15 @@
                         <button
                             class="btn btn-light rounded-pill d-flex align-items-center px-3 py-1 border-0 shadow-sm dropdown-toggle"
                             type="button" data-bs-toggle="dropdown">
-                            <img src="{{ Auth::user()->avatar_url ?? '/images/default-avatar.png' }}" alt="Avatar"
-                                class="rounded-circle me-2" width="26" height="26">
+                            <img src="avatars/{{ Auth::user()->avatar ?? '/images/default-avatar.png' }}"
+                                alt="Avatar" class="rounded-circle me-2" width="26" height="26">
                             <span class="fw-medium">{{ Str::limit(Auth::user()->name, 10) }}</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-2">
                             <li class="px-3 py-2 border-bottom">
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ Auth::user()->avatar_url ?? '/images/default-avatar.png' }}"
-                                        alt="Avatar" class="rounded-circle me-2" width="40" height="40">
+                                    {{-- <img src="{{ Auth::user()->avatar_url ?? '/images/default-avatar.png' }}"
+                                        alt="Avatar" class="rounded-circle me-2" width="40" height="40"> --}}
                                     <div>
                                         <div class="fw-bold">{{ Auth::user()->name }}</div>
                                         <small class="text-muted">{{ Auth::user()->email }}</small>
@@ -404,11 +434,11 @@
                                 </div>
                             </li>
                             <li><a class="dropdown-item rounded-2 py-2" href="/">
-                                    <i class="bi bi-person me-2"></i>{{ __('layout.profile') }}
+                                    <i class="bi bi-person me-2"></i>{{ ut('layout.profile') }}
                                 </a></li>
                             <li><a class="dropdown-item rounded-2 py-2" href="#"
                                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    <i class="bi bi-box-arrow-right me-2"></i>{{ __('layout.logout') }}
+                                    <i class="bi bi-box-arrow-right me-2"></i>{{ ut('layout.logout') }}
                                 </a></li>
                         </ul>
                     </div>
@@ -422,7 +452,7 @@
                         <i class="bi bi-check-circle-fill me-2 fs-5"></i>
                         <div class="flex-grow-1">{{ session('success') }}</div>
                         <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"
-                            aria-label="{{ __('layout.close') }}"></button>
+                            aria-label="{{ ut('layout.close') }}"></button>
                     </div>
                 @endif
 
@@ -432,7 +462,7 @@
                         <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
                         <div class="flex-grow-1">{{ session('error') }}</div>
                         <button type="button" class="btn-close ms-2" data-bs-dismiss="alert"
-                            aria-label="{{ __('layout.close') }}"></button>
+                            aria-label="{{ ut('layout.close') }}"></button>
                     </div>
                 @endif
             </div>
@@ -442,25 +472,14 @@
             </main>
 
             <footer class="text-center text-muted py-4 border-top">
-                &copy; {{ date('Y') }} {{ __('layout.footer_text') }}
+                &copy; {{ date('Y') }} {{ ut('layout.footer_text') }}
             </footer>
         </div>
     </div>
 
-    {{-- // 修改你的通知弹窗HTML --}}
-    <div class="notification-popup shadow" id="notificationPopup">
-        <div
-            class="notification-header d-flex justify-content-between align-items-center bg-primary text-white px-3 py-2 rounded-top">
-            <h6 class="mb-0">{{ __('layout.notification_center') }}</h6>
-            <div>
-                <button class="btn btn-sm btn-outline-light me-2" onclick="markAllAsRead()">全部已读</button>
-                <button class="btn btn-sm btn-close-white" onclick="toggleNotifications()"></button>
-            </div>
-        </div>
-        <div class="notification-list px-3 py-2" style="max-height: 400px; overflow-y: auto;">
-            <!-- 动态内容插入这里 -->
-        </div>
-    </div>
+    @include('layouts.partials.notification-panel', [
+    'notifications' => \App\Models\Notification::latest()->take(10)->get()
+])
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -757,24 +776,30 @@
     <script src="https://unpkg.com/filepond/dist/filepond.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-     <script>
+    <!-- 统一翻译系统 -->
+    <script src="{{ asset('js/translations.js') }}"></script>
+    <script>
+        // 初始化JavaScript翻译
+        window.Translations = @json(get_js_translations());
+        initTranslations(window.Translations);
+        
+        // 兼容旧的APP_TEXTS
         window.APP_TEXTS = {
-            successTitle: '{{ __('layout.success') }}',
-            successMessage: '{{ __('layout.operation_success') }}',
-            errorTitle: '{{ __('layout.error') }}',
-            errorMessage: '{{ __('layout.operation_failed') }}',
-            confirmTitle: '{{ __('layout.confirm_title') }}',
-            confirmMessage: '{{ __('layout.confirm_operation') }}',
-            confirm: '{{ __('layout.confirm') }}',
-            cancel: '{{ __('layout.cancel') }}'
+            successTitle: '{{ ut('common.success') }}',
+            successMessage: '{{ ut('common.success') }}',
+            errorTitle: '{{ ut('common.error') }}',
+            errorMessage: '{{ ut('common.error') }}',
+            confirmTitle: '{{ ut('common.confirm') }}',
+            confirmMessage: '{{ ut('common.confirm') }}',
+            confirm: '{{ ut('common.confirm') }}',
+            cancel: '{{ ut('common.cancel') }}'
         };
     </script>
-
 
     <script src="{{ asset('js/toast.js') }}"></script>
     <script src="{{ asset('js/noticification.js') }}"></script>
     <script src="{{ asset('js/alert.js') }}"></script>
-   
+
     @stack('scripts')
 
 </body>

@@ -306,25 +306,48 @@ if (!function_exists('buildRelationSubQuery')) {
 }
 
 if (!function_exists('applyPagination')) {
-    function applyPagination(Builder $query, Request $request, int $defaultPerPage = 1000)
+    function applyPagination(Builder $query, Request $request, int $defaultPerPage = 0)
     {
         $perPage = $request->input('per_page', $defaultPerPage);
-        return $query->paginate($perPage)->appends($request->all());
+
+        // 如果默认值是 0 或用户选择 all，则显示所有记录
+        if ($perPage === 'all' || (int)$perPage === 0) {
+            $perPage = $query->count();
+        }
+
+        return $query->paginate((int) $perPage)->appends($request->all());
     }
 }
+
 
 //-----------------用于字典--------------------
 if (!function_exists('dict')) {
     /**
-     * 获取字典选项
-     * 
-     * @param string $groupCode 分组代码
-     * @param string|null $language 语言代码
-     * @return array
+     * 获取字典数据
      */
-    function dict(string $groupCode, string $language = null): array
+    function dict($group, $locale = null)
     {
-        return app(App\Services\DictionaryService::class)->getOptions($groupCode, $language);
+        $locale = $locale ?: app()->getLocale();
+        $cacheKey = "dict_{$group}_{$locale}";
+        
+        
+        return Cache::remember($cacheKey, 3600, function () use ($group, $locale) {
+            $dictGroup = \App\Models\DataDictionary\DictGroup::where('code', $group)->first();
+            if (!$dictGroup) {
+                return [];
+            }
+            
+            return $dictGroup->items()
+                ->with(['translations' => function ($query) use ($locale) {
+                    $query->where('language', $locale);
+                }])
+                ->get()
+                ->mapWithKeys(function ($item) use ($locale) {
+                    $translation = $item->translations->first();
+                    return [$item->code => $translation ? $translation->label : $item->value];
+                })
+                ->toArray();
+        });
     }
 }
 
@@ -337,7 +360,7 @@ if (!function_exists('dict_label')) {
      * @param string|null $language 语言代码
      * @return string
      */
-    function dict_label(string $groupCode, string $value, string $language = null): string
+    function dict_label(string $groupCode, string $value, ?string $language = null): string
     {
         return app(App\Services\DictionaryService::class)->getLabel($groupCode, $value, $language);
     }
@@ -345,13 +368,76 @@ if (!function_exists('dict_label')) {
 
 if (!function_exists('dict_colors')) {
     /**
-     * 获取字典徽章样式映射
-     * 
-     * @param string $groupCode 分组代码
-     * @return array
+     * 获取字典颜色映射
      */
-    function dict_colors(string $groupCode): array
+    function dict_colors($group)
     {
-        return app(App\Services\DictionaryService::class)->getBadgeMap($groupCode);
+        $service = app(\App\Services\DictionaryService::class);
+        return $service->getBadgeMap($group);
     }
+}
+
+if (!function_exists('unified_trans')) {
+    /**
+     * 统一翻译函数
+     * 支持多层级访问：unified_trans('common.create') 或 unified_trans('modules.property.page_title')
+     */
+    function unified_trans($key, $locale = null)
+{
+    $locale = $locale ?: app()->getLocale();
+    $cacheKey = "unified_trans_{$key}_{$locale}";
+    
+    return Cache::remember($cacheKey, 3600, function () use ($key, $locale) {
+        $translations = require lang_path("{$locale}/translations.php");
+        $keys = explode('.', $key);
+        $value = $translations;
+        
+        foreach ($keys as $k) {
+            if (isset($value[$k])) {
+                $value = $value[$k];
+            } else {
+                return $key; // 如果找不到翻译，返回原key
+            }
+        }
+        
+        return is_string($value) ? $value : $key;
+    });
+}
+}
+
+if (!function_exists('ut')) {
+    /**
+     * 统一翻译的简写
+     */
+    function ut($key, $locale = null)
+    {
+        return unified_trans($key, $locale);
+    }
+}
+
+if (!function_exists('js_trans')) {
+    /**
+     * JavaScript翻译函数
+     * 用于在JavaScript中获取翻译
+     */
+    function js_trans($key, $locale = null)
+    {
+        return unified_trans("js.{$key}", $locale);
+    }
+}
+
+if (!function_exists('get_js_translations')) {
+    /**
+     * 获取所有JavaScript翻译
+     */
+    function get_js_translations($locale = null)
+{
+    $locale = $locale ?: app()->getLocale();
+    $cacheKey = "js_translations_{$locale}";
+    
+    return Cache::remember($cacheKey, 3600, function () use ($locale) {
+        $translations = require lang_path("{$locale}/translations.php");
+        return $translations['js'] ?? [];
+    });
+}
 }

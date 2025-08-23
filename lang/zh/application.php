@@ -71,20 +71,29 @@ return [
     // 搜索字段
     'search_application_code' => '申请编号',
     'search_notes' => '备注',
+    'search_email' => '邮箱',
+    'search_phone' => '电话',
     
     // 筛选字段
     'filter_status' => '状态',
     'filter_property' => '房源',
+    'filter_reviewer' => '审核人',
+    'filter_submitted_date' => '提交日期',
+    'filter_reviewed_date' => '审核日期',
+    'filter_property_type' => '房源类型',
+    'filter_risk_score' => '风险评分',
     
     // 列标题
     'column_application_code' => '编号',
     'column_property' => '房源',
     'column_applicant' => '申请人',
-    'column_lease_term' => '租期(月)',
+    'column_employment' => '就业信息',
     'column_submitted_at' => '申请时间',
     'column_reviewer' => '审核人',
+    'column_risk_score' => '风险评分',
     'column_review_notes' => '审核备注',
     'column_status' => '状态',
+    'column_files' => '文件',
     'column_updated_at' => '状态更新时间',
     
     // 操作按钮

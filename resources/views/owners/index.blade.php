@@ -2,7 +2,7 @@
 
 @section('content')
     @include('components.pages.index-table', [
-        'pageTitle' => __('owner.page_title'),
+        'pageTitle' => ut('modules.owner.page_title'),
         'pageIcon' => 'bi bi-person-badge',
         // 'createUrl' => route('owners.create'),
         // 'createLabel' => __('owner.create_label'),
@@ -14,14 +14,14 @@
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-plus-circle',
-                    'label' => __('owner.create_label'),
+                    'label' => ut('modules.owner.create_label'),
                     'url' => route('owners.create'),
                     'class' => 'btn btn-primary',
                 ],
                 [
                     'type' => 'link',
                     'icon' => 'bi bi-download',
-                    'label' => __('owner.export_label'),
+                    'label' => ut('modules.owner.export_label'),
                     'url' => '',
                     route('leases.export', request()->all()),
                     'class' => 'btn btn-outline-secondary',
@@ -36,7 +36,7 @@
                     'items' => [
                         [
                             'label' => '批量删除',
-                            'action' => 'bulk-delete',
+                            'action' => 'delete',
                             'icon' => 'bi bi-trash',
                         ],
                     ],
@@ -48,24 +48,24 @@
             [
                 'relation' => null,
                 'column' => 'property_name',
-                'label' => __('property.search_fields.property_name'),
+                'label' => ut('modules.property.search_property_name'),
             ],
             [
                 'relation' => null,
                 'column' => 'email',
-                'label' => __('owner.search_fields.email'),
+                'label' => ut('modules.owner.search_fields.email'),
             ],
             [
                 'relation' => null,
                 'column' => 'phone',
-                'label' => __('owner.search_fields.phone'),
+                'label' => ut('modules.owner.search_fields.phone'),
             ],
         ],
     
         'filterFields' => [
             [
                 'key' => 'address',
-                'label' => __('owner.address'),
+                'label' => ut('modules.owner.address'),
                 'column' => 'address',
             ],
         ],
@@ -75,7 +75,7 @@
     
         'columns' => [
             [
-                'label' => __('owner.columns.owner_name'),
+                'label' => ut('modules.owner.columns.owner_name'),
                 'type' => 'custom',
                 'render' => function ($item) {
                     $fullName = trim(($item->first_name ?? '') . ' ' . ($item->last_name ?? '')) ?: '未命名';
@@ -93,24 +93,24 @@
                 'sortable' => true,
             ],
             [
-                'label' => __('owner.columns.address'),
+                'label' => ut('modules.owner.columns.address'),
                 'column' => 'address',
                 'sortable' => true,
             ],
             [
-                'label' => __('owner.columns.emergency_contact'),
+                'label' => ut('modules.owner.columns.emergency_contact'),
                 'type' => 'custom',
                 'render' => fn($item) => e(
                     ($item->emergency_contact ?? '-') . ' / ' . ($item->emergency_contact_phone ?? '-')),
                 'sortable' => false,
             ],
             [
-                'label' => __('owner.columns.tax_id'),
+                'label' => ut('modules.owner.columns.tax_id'),
                 'column' => 'tax_id',
                 'sortable' => true,
             ],
             [
-                'label' => __('owner.columns.is_active'),
+                'label' => ut('modules.owner.columns.is_active'),
                 'column' => 'is_active',
                 'type' => 'badge',
                 'badge_map' => [
@@ -118,29 +118,28 @@
                     0 => 'secondary',
                 ],
                 'render' => fn($item) => $item->is_active
-                    ? __('common.status.active')
-                    : __('common.status.inactive'),
+                                ? ut('common.active')
+            : ut('common.inactive'),
                 'sortable' => true,
             ],
         ],
     
         'actions' => [
             [
-                'label' => __('owner.actions.view'),
+                'label' => ut('modules.owner.actions.view'),
                 'url' => fn($item) => route('properties.show', $item->owner_id),
                 'icon' => 'bi bi-eye',
             ],
             [
-                'label' => __('owner.actions.edit'),
+                'label' => ut('modules.owner.actions.edit'),
                 'url' => fn($item) => route('properties.edit', $item->owner_id),
                 'icon' => 'bi bi-pencil-square',
             ],
             [
-                'label' => __('owner.actions.delete'),
+                'label' => ut('modules.owner.actions.delete'),
                 'url' => fn($item) => 'javascript:void(0);',
                 'icon' => 'bi bi-trash',
-                'class' => 'text-danger',
-                'onclick' => fn($item) => "submitDelete('" . route('owners.destroy', $item->owner_id) . "')",
+                'class' => 'record-action text-danger',
             ],
         ],
     
