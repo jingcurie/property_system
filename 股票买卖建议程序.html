@@ -10,12 +10,10 @@
         --card: #111827;
         --muted: #94a3b8;
         --text: #e2e8f0;
-        --green: #10b981;
-        --red: #ef4444;
-        --amber: #f59e0b;
-        --blue: #3b82f6;
         --border: #1f2937;
         --indigo: #6366f1;
+        --rise: #ef4444;
+        --fall: #10b981;
       }
       html,
       body {
@@ -102,15 +100,15 @@
         font-size: 12px;
       }
       .b-buy {
-        background: rgba(16, 185, 129, 0.15);
-        color: #ef4444;
-        border: 1px solid rgba(16, 185, 129, 0.35);
-      }
-      .b-sell {
         background: rgba(239, 68, 68, 0.15);
-        color: #10b981;
+        color: #fecaca;
         border: 1px solid rgba(239, 68, 68, 0.35);
-      }
+      } /* 买入=红 */
+      .b-sell {
+        background: rgba(16, 185, 129, 0.15);
+        color: #86efac;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+      } /* 卖出=绿 */
       .b-hold {
         background: rgba(245, 158, 11, 0.15);
         color: #fde68a;
@@ -123,7 +121,7 @@
       }
       .btn {
         background: linear-gradient(135deg, var(--indigo), #0ea5e9);
-        color: white;
+        color: #fff;
         border: 0;
         padding: 10px 14px;
         border-radius: 12px;
@@ -140,11 +138,11 @@
         color: #cbd5e1;
         font-size: 12px;
       }
-      .ok {
-        color: #ef4444;
+      .rise {
+        color: var(--rise);
       }
-      .err {
-        color: #10b981;
+      .fall {
+        color: var(--fall);
       }
       .foot {
         margin-top: 10px;
@@ -174,6 +172,13 @@
         box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
         display: none;
       }
+      .sub {
+        margin-top: 14px;
+      }
+      .k {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+          monospace;
+      }
     </style>
   </head>
   <body>
@@ -195,6 +200,7 @@
             />
             <button class="btn" id="addBtn">加入自选</button>
             <button class="btn" id="refreshBtn">立即刷新</button>
+            <button class="btn" id="btwBtn">一周回测（¥10,000）</button>
           </div>
           <div class="hint">
             提示：6 开头默认上交所.SH；0/3 开头默认深交所.SZ。
@@ -205,7 +211,8 @@
       <div class="card">
         <div class="card-body">
           <div class="muted" style="margin-bottom: 8px">
-            仅基于技术面：EMA20 / SMA50 / SMA200 / RSI14 / MACD，实时 Ajax。
+            仅基于技术面：EMA20 / SMA50 / SMA200 / RSI14 / MACD（日线）。Ajax
+            多源回退，红涨绿跌。
           </div>
           <div style="overflow: auto">
             <table id="grid">
@@ -214,7 +221,7 @@
                   <th>代码</th>
                   <th>名称</th>
                   <th class="num">现价</th>
-                  <th class="num">涨跌幅</th>
+                  <th class="num">涨跌幅（今日/昨日）</th>
                   <th>结论</th>
                   <th>理由</th>
                   <th>买入区间 / 卖出区间</th>
@@ -225,14 +232,19 @@
               <tbody id="tbody"></tbody>
             </table>
           </div>
-          <div class="foot">* 本页仅供参考，非投资建议。</div>
+          <div class="foot">
+            * 本页仅供参考，非投资建议；未考虑法定节假日休市。
+          </div>
+
+          <div id="btw" class="sub"></div>
         </div>
       </div>
     </div>
     <div class="toast" id="toast"></div>
+
     <script>
-      /********* 自选保存 *********/
-      const LS_KEY = "watchlist.cnA.v3";
+      /* ================= 自选保存 ================= */
+      const LS_KEY = "watchlist.cnA.v6";
       const DEFAULTS = [
         { symbol: "603338.SH", name: "浙江鼎力" },
         { symbol: "300093.SZ", name: "*ST金刚", st: true },
@@ -244,7 +256,7 @@
         try {
           const a = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
           return Array.isArray(a) && a.length ? a : DEFAULTS;
-        } catch {
+        } catch (_) {
           return DEFAULTS;
         }
       }
@@ -253,7 +265,7 @@
       }
       let WATCHLIST = loadWatchlist();
 
-      /********* 策略参数 *********/
+      /* ================= 策略参数 ================= */
       const RULES = {
         emaShort: 20,
         smaMid: 50,
@@ -264,24 +276,26 @@
         volBurst: 1.3,
       };
 
-      /********* DOM *********/
+      /* ================= DOM/Toast ================= */
       const tbody = document.getElementById("tbody");
       const asof = document.getElementById("asof");
       const marketState = document.getElementById("marketState");
       const toast = document.getElementById("toast");
+      const btwBox = document.getElementById("btw");
       function showToast(msg, ok = true) {
         toast.textContent = msg;
         toast.style.display = "block";
         toast.style.borderColor = ok ? "#16a34a" : "#dc2626";
-        setTimeout(() => (toast.style.display = "none"), 2600);
+        setTimeout(() => (toast.style.display = "none"), 2200);
       }
 
-      /********* 工具 *********/
-      function fetchWithTimeout(url, opts = {}, ms = 7000) {
-        const c = new AbortController();
-        const id = setTimeout(() => c.abort(), ms);
+      /* ================= 工具 ================= */
+      // 带超时 + cache bust
+      function fetchWithTimeout(url, opts = {}, ms = 8000) {
+        const ctrl = new AbortController();
+        const id = setTimeout(() => ctrl.abort(), ms);
         const bust = (url.includes("?") ? "&" : "?") + `_=${Date.now()}`;
-        return fetch(url + bust, { ...opts, signal: c.signal }).finally(() =>
+        return fetch(url + bust, { ...opts, signal: ctrl.signal }).finally(() =>
           clearTimeout(id)
         );
       }
@@ -304,35 +318,47 @@
         return (ex === "SH" ? "sh" : "sz") + code;
       }
 
-      /********* 交易时段（北京时间） *********/
+      // 统一以 Asia/Shanghai 判定时段，避免双重偏移
       function cnNow() {
-        const now = new Date();
-        const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-        return new Date(utc + 8 * 3600000);
+        return new Date();
       }
       function marketStateInfo() {
-        const t = cnNow(),
-          d = t.getDay(),
-          hh = t.getHours() * 100 + t.getMinutes();
-        const isWd = d >= 1 && d <= 5;
+        const tz = "Asia/Shanghai";
+        const now = new Date();
+        const parts = new Intl.DateTimeFormat("zh-CN", {
+          timeZone: tz,
+          hour12: false,
+          hour: "2-digit",
+          minute: "2-digit",
+        }).formatToParts(now);
+        const hhmm =
+          +parts.find((p) => p.type === "hour").value * 100 +
+          +parts.find((p) => p.type === "minute").value;
+        const d = new Date(
+          now.toLocaleString("en-US", { timeZone: tz })
+        ).getDay();
         let state = "休市";
-        if (isWd) {
-          if (hh < 930) state = "未开盘";
-          else if (hh < 1130) state = "交易中";
-          else if (hh < 1300) state = "午休";
-          else if (hh < 1500) state = "交易中";
+        if (d >= 1 && d <= 5) {
+          if (hhmm < 930) state = "未开盘";
+          else if (hhmm < 1130) state = "交易中";
+          else if (hhmm < 1300) state = "午休";
+          else if (hhmm < 1500) state = "交易中";
           else state = "已收盘";
         }
-        return {
-          state,
-          ts: t.toLocaleString("zh-CN", {
-            hour12: false,
-            timeZone: "Asia/Shanghai",
-          }),
-        };
+        const ts = new Intl.DateTimeFormat("zh-CN", {
+          timeZone: tz,
+          hour12: false,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(now);
+        return { state, ts };
       }
 
-      /********* 行情 & K线（东财优先，失败回退腾讯） *********/
+      /* ========== 行情 & K线（东财优先，失败回退腾讯） ========== */
       async function fetchQuote(symbol) {
         const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid(
           symbol
@@ -358,8 +384,9 @@
           amt: d.f48,
         };
       }
-      async function fetchKline(symbol, limit = 220) {
-        // A. 东方财富（带 ut）
+
+      async function fetchKline(symbol, limit = 260) {
+        // 东财
         const urlA = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=${secid(
           symbol
         )}&klt=101&fqt=1&lmt=${limit}&fields1=f1,f2,f3,f4&fields2=f51,f52,f53,f54,f55,f56,f59,f60,f61,f62,f63`;
@@ -383,8 +410,8 @@
               });
             }
           }
-        } catch (_) {} // 回退
-        // B. 腾讯
+        } catch (_) {}
+        // 腾讯回退
         const tc = toTencent(symbol);
         const urlB = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${tc},day,,,${limit},qfq`;
         const r2 = await fetchWithTimeout(urlB);
@@ -403,7 +430,7 @@
         }));
       }
 
-      /********* 指标 *********/
+      /* ================= 指标 ================= */
       function sma(v, p) {
         if (v.length < p) return NaN;
         const s = v.slice(-p);
@@ -430,8 +457,8 @@
       }
       function macd(v, fast = 12, slow = 26, sig = 9) {
         const emaS = (a, p) => {
-          const k = 2 / (p + 1);
-          const o = [];
+          const k = 2 / (p + 1),
+            o = [];
           o[0] = a[0];
           for (let i = 1; i < a.length; i++)
             o[i] = a[i] * k + o[i - 1] * (1 - k);
@@ -450,7 +477,7 @@
       }
       function atr(rows, p = 14) {
         if (rows.length <= p) return NaN;
-        let trs = [];
+        const trs = [];
         for (let i = 1; i < rows.length; i++) {
           const h = rows[i].high,
             l = rows[i].low,
@@ -462,11 +489,11 @@
         return s.reduce((a, b) => a + b, 0) / s.length;
       }
 
-      /********* 决策 + 区间 *********/
-      function decide(kline, quote, isST = false) {
-        const closes = kline.map((r) => r.close),
-          vols = kline.map((r) => r.vol),
-          last = closes.at(-1);
+      /* ========== 判定（在给定索引处做决策） ========== */
+      function decideAt(kline, idx) {
+        const closes = kline.slice(0, idx + 1).map((r) => r.close);
+        const vols = kline.slice(0, idx + 1).map((r) => r.vol);
+        const last = closes.at(-1);
         const ema20 = ema(closes, RULES.emaShort),
           sma50 = sma(closes, RULES.smaMid),
           sma200 = sma(closes, RULES.smaLong);
@@ -474,86 +501,20 @@
         const { macd: macdV, signal: macdSig } = macd(closes);
         const avgVol5 = vols.slice(-5).reduce((a, b) => a + b, 0) / 5;
         const volBurst = vols.at(-1) > avgVol5 * RULES.volBurst;
-        const recentHigh = Math.max(...closes.slice(-20));
-        const recentLow = Math.min(...closes.slice(-20));
-        const atr14 = atr(kline, 14);
-
-        let level = "HOLD",
-          badge = "b-hold",
-          label = "继续持有",
-          reasons = [];
-        if (last > ema20 && ema20 > sma50) {
-          level = "BUY";
-          badge = "b-buy";
-          label = "建议买入";
-          reasons.push("价格站上EMA20且EMA20>SMA50，趋势向上");
-          if (volBurst) reasons.push("放量突破（>近5日均量）");
-        }
-        if (last < ema20 && (macdV < macdSig || ema20 < sma50)) {
-          level = "SELL";
-          badge = "b-sell";
-          label = "建议卖出";
-          reasons.push("收盘跌破EMA20且动能转弱（MACD死叉/20<50）");
-        }
-        if (rsi14 >= RULES.rsiOB) {
-          if (level !== "SELL") {
-            level = "HOLD";
-            badge = "b-hold";
-            label = "考虑减仓/等待回落";
-          }
-          reasons.push(`RSI 超买（≥${RULES.rsiOB}）`);
-        }
-        if (rsi14 <= RULES.rsiOS) {
-          if (level === "SELL") {
-            level = "WATCH";
-            badge = "b-watch";
-            label = "观望/等待企稳";
-          }
-          reasons.push(`RSI 超卖（≤${RULES.rsiOS}）`);
-        }
-
-        if (level === "BUY" && sma50 < sma200)
-          reasons.push("中长期仍弱（SMA50 < SMA200），控制仓位");
-        if (isST) reasons.push("ST 风险：流动性/涨跌停限制更严格");
-
-        const buyLow = Math.max(recentLow, ema20 - 0.5 * (atr14 || 0));
-        const buyHigh = Math.min(ema20, last);
-        let sellLow, sellHigh;
-        if (level === "SELL") {
-          sellLow = Math.max(last * 0.98, ema20 - (atr14 || 0));
-          sellHigh = Math.max(last, ema20 - 0.3 * (atr14 || 0));
-        } else {
-          sellLow = recentHigh * 0.99;
-          sellHigh = recentHigh * 1.01;
-        }
-
-        const metrics = {
-          price: last,
-          ema20: r2(ema20),
-          sma50: r2(sma50),
-          sma200: r2(sma200),
-          rsi14: r1(rsi14),
-          macd: r3(macdV),
-          signal: r3(macdSig),
-          atr14: r2(atr14 || 0),
-          recentHigh: r2(recentHigh),
-          recentLow: r2(recentLow),
-          buyLow: r2(buyLow),
-          buyHigh: r2(buyHigh),
-          sellLow: r2(sellLow),
-          sellHigh: r2(sellHigh),
-        };
-        return { level, badge, label, reasons, metrics };
+        let level = "HOLD";
+        if (last > ema20 && ema20 > sma50) level = "BUY";
+        if (last < ema20 && (macdV < macdSig || ema20 < sma50)) level = "SELL";
+        if (rsi14 >= RULES.rsiOB && level !== "SELL") level = "HOLD";
+        if (rsi14 <= RULES.rsiOS && level === "SELL") level = "WATCH";
+        return { level, volBurst };
       }
-      const r1 = (x) => Math.round(x * 10) / 10,
-        r2 = (x) => Math.round(x * 100) / 100,
-        r3 = (x) => Math.round(x * 1000) / 1000;
 
-      /********* 渲染 *********/
+      /* ================= 实时渲染 ================= */
       async function render() {
         const ms = marketStateInfo();
-        marketState.textContent =
-          ms.state + ` · 北京时间 ${ms.ts.split(" ")[1] || ms.ts}`;
+        marketState.textContent = `${ms.state} · 北京时间 ${
+          ms.ts.split(" ")[1] || ms.ts
+        }`;
         asof.textContent = `刷新时间：${new Date().toLocaleString()}`;
         tbody.innerHTML = "";
         let err = 0;
@@ -569,65 +530,277 @@
         try {
           const [q, kl] = await Promise.all([
             fetchQuote(item.symbol),
-            fetchKline(item.symbol, 220),
+            fetchKline(item.symbol, 260),
           ]);
           item.name = item.name || q.name;
           saveWatchlist(WATCHLIST);
 
-          const dec = decide(kl, q, !!item.st);
-
-          // 涨跌幅：今日（只在交易时段显示）、昨日（K线最后两根）
+          // 涨跌显示：今日（盘中用） / 昨日（K线推算）
           let todayStr = "—",
-            todayColor = "#cbd5e1";
+            todayCls = "";
           if (state === "交易中") {
             const tchg = (((q.price - q.prev) / q.prev) * 100).toFixed(2);
-            todayStr = (+tchg).toFixed(2) + "%";
-            todayColor = +tchg >= 0 ? "#ef4444" : "#10b981";
+            todayStr = `${(+tchg).toFixed(2)}%`;
+            todayCls = +tchg >= 0 ? "rise" : "fall";
           }
           let ydayStr = "—",
-            yColor = "#cbd5e1";
+            yCls = "";
           if (kl.length >= 2) {
             const last = kl.at(-1).close,
               prev = kl.at(-2).close;
             const y = (((last - prev) / prev) * 100).toFixed(2);
-            ydayStr = y + "%";
-            yColor = +y >= 0 ? "#ef4444" : "#10b981";
+            ydayStr = `${y}%`;
+            yCls = +y >= 0 ? "rise" : "fall";
+          }
+
+          // 决策 + 区间（最新bar）
+          const closes = kl.map((r) => r.close);
+          const last = closes.at(-1);
+          const ema20 = ema(closes, RULES.emaShort),
+            sma50 = sma(closes, RULES.smaMid),
+            sma200 = sma(closes, RULES.smaLong);
+          const rsi14 = rsi(closes, RULES.rsiPeriod);
+          const { macd: macdV, signal: macdSig } = macd(closes);
+          let level = "HOLD",
+            badge = "b-hold",
+            label = "继续持有",
+            reasons = [];
+          if (last > ema20 && ema20 > sma50) {
+            level = "BUY";
+            badge = "b-buy";
+            label = "建议买入";
+            reasons.push("价格>EMA20 且 20>50");
+          }
+          if (last < ema20 && (macdV < macdSig || ema20 < sma50)) {
+            level = "SELL";
+            badge = "b-sell";
+            label = "建议卖出";
+            reasons.push("跌破EMA20 & 动能转弱");
+          }
+          if (rsi14 >= RULES.rsiOB) {
+            if (level !== "SELL") {
+              level = "HOLD";
+              badge = "b-hold";
+              label = "考虑减仓";
+            }
+            reasons.push("RSI超买");
+          }
+          if (rsi14 <= RULES.rsiOS) {
+            if (level === "SELL") {
+              level = "WATCH";
+              badge = "b-watch";
+              label = "观望";
+            }
+            reasons.push("RSI超卖");
+          }
+
+          const recentHigh = Math.max(...closes.slice(-20));
+          const recentLow = Math.min(...closes.slice(-20));
+          const a = atr(kl, 14) || 0;
+
+          const buyLow = Math.max(recentLow, ema20 - 0.5 * a);
+          const buyHigh = Math.min(ema20, last);
+
+          let sellLow, sellHigh;
+          if (level === "SELL") {
+            sellLow = Math.max(last * 0.98, ema20 - a);
+            sellHigh = Math.max(last, ema20 - 0.3 * a);
+          } else {
+            sellLow = recentHigh * 0.99;
+            sellHigh = recentHigh * 1.01;
           }
 
           tr.innerHTML = `
       <td>${item.symbol}${item.st ? ' <span class="pill">ST</span>' : ""}</td>
       <td>${item.name || ""}</td>
       <td class="num">${(q.price || 0).toFixed(2)}</td>
-      <td class="num">今日：<b style="color:${todayColor}">${todayStr}</b><br>昨日：<b style="color:${yColor}">${ydayStr}</b></td>
-      <td><span class="badge ${dec.badge}">${dec.label}</span></td>
-      <td><ul class="reasons">${dec.reasons
+      <td class="num">今日：<b class="${todayCls}">${todayStr}</b><br>昨日：<b class="${yCls}">${ydayStr}</b></td>
+      <td><span class="badge ${badge}">${label}</span></td>
+      <td><ul class="reasons">${reasons
         .slice(0, 3)
         .map((r) => `<li>${r}</li>`)
         .join("")}</ul></td>
-      <td class="muted">买：<b>${dec.metrics.buyLow}</b> — <b>${
-            dec.metrics.buyHigh
-          }</b><br/>卖：<b>${dec.metrics.sellLow}</b> — <b>${
-            dec.metrics.sellHigh
-          }</b></td>
-      <td class="muted">EMA20 <b>${dec.metrics.ema20}</b> · SMA50 <b>${
-            dec.metrics.sma50
-          }</b> · SMA200 <b>${dec.metrics.sma200}</b> · RSI14 <b>${
-            dec.metrics.rsi14
-          }</b> · MACD <b>${dec.metrics.macd}</b> · ATR14 <b>${
-            dec.metrics.atr14
-          }</b></td>
+      <td class="muted">买：<b>${round2(buyLow)}</b> — <b>${round2(
+            buyHigh
+          )}</b><br/>卖：<b>${round2(sellLow)}</b> — <b>${round2(
+            sellHigh
+          )}</b></td>
+      <td class="muted k">EMA20 <b>${round2(ema20)}</b> · SMA50 <b>${round2(
+            sma50
+          )}</b> · SMA200 <b>${round2(sma200)}</b> · RSI14 <b>${round1(
+            rsi14
+          )}</b> · MACD <b>${round3(macdV)}</b> · ATR14 <b>${round2(a)}</b></td>
       <td class="num"><span class="x" title="移除" data-symbol="${
         item.symbol
       }">✕</span></td>
     `;
         } catch (e) {
-          tr.innerHTML = `<td colspan="9" class="err">${
+          tr.innerHTML = `<td colspan="9" class="fall">${
             item.symbol
           } 加载失败：${e.message || e}</td>`;
         }
       }
 
-      /********* 交互：添加 / 删除 / 刷新 *********/
+      /* ========== 一周回测（等权；信号日次日开盘成交；忽略手续费/滑点） ========== */
+      async function backtestWeek(total = 10000) {
+        if (!WATCHLIST.length) {
+          btwBox.innerHTML =
+            '<div class="muted">自选列表为空，无法回测。</div>';
+          return;
+        }
+        btwBox.innerHTML = '<div class="muted">回测计算中…</div>';
+
+        const each = total / WATCHLIST.length;
+        let totalEnd = 0,
+          totalBH = 0;
+        let head, tail;
+        const rows = [];
+
+        for (const it of WATCHLIST) {
+          try {
+            const kl = await fetchKline(it.symbol, 260);
+            if (kl.length < 60) throw new Error("历史不足");
+            const L = kl.length;
+            const endIdx = L - 1; // 期末（最新一根）
+            const startIdx = L - 6; // 过去 5 个交易日（含末日）
+            head = head || kl[startIdx].date;
+            tail = tail || kl[endIdx].date;
+
+            // 基准：周初开盘买、周末收盘卖
+            const bhBuy = kl[startIdx].open,
+              bhSell = kl[endIdx].close;
+            const bhEnd = each * (bhSell / bhBuy);
+            totalBH += bhEnd;
+
+            // 策略：信号日收盘判定，次日开盘成交
+            let cash = each,
+              shares = 0,
+              trades = [];
+            for (let i = startIdx; i < endIdx; i++) {
+              const sig = decideAt(kl, i).level;
+              const px = kl[i + 1].open;
+              if (shares === 0 && sig === "BUY") {
+                shares = Math.floor(cash / px);
+                if (shares > 0) {
+                  cash -= shares * px;
+                  trades.push({
+                    date: kl[i + 1].date,
+                    act: "买入",
+                    price: px,
+                    shares,
+                  });
+                }
+              } else if (shares > 0 && sig === "SELL") {
+                cash += shares * px;
+                trades.push({
+                  date: kl[i + 1].date,
+                  act: "卖出",
+                  price: px,
+                  shares,
+                });
+                shares = 0;
+              }
+            }
+            const endVal = cash + shares * kl[endIdx].close;
+            totalEnd += endVal;
+
+            rows.push({
+              symbol: it.symbol,
+              name: it.name || "",
+              begin: each,
+              end: endVal,
+              bh: bhEnd,
+              trades,
+              start: kl[startIdx].date,
+              endDate: kl[endIdx].date,
+            });
+          } catch (err) {
+            rows.push({
+              symbol: it.symbol,
+              name: it.name || "",
+              error: err.message || String(err),
+            });
+          }
+        }
+
+        const fmt = (n) =>
+          n == null ? "—" : (Math.round(n * 100) / 100).toFixed(2);
+        const pct = (a, b) =>
+          b ? (((a - b) / b) * 100).toFixed(2) + "%" : "—";
+
+        const html = `
+    <div class="k">回测区间：<b>${head || "-"}</b> → <b>${
+          tail || "-"
+        }</b> · 总本金 ¥${fmt(total)} · 等权</div>
+    <div style="overflow:auto;margin-top:8px">
+      <table style="width:100%">
+        <thead><tr>
+          <th>代码</th><th>名称</th><th class="num">期初(¥)</th><th class="num">期末(¥)</th><th class="num">收益</th><th class="num">基准期末(¥)</th><th class="num">相对基准</th><th>成交</th>
+        </tr></thead>
+        <tbody>
+          ${rows
+            .map((r) =>
+              r.error
+                ? `<tr><td>${r.symbol}</td><td>${r.name}</td><td colspan="6" class="fall">回测失败：${r.error}</td></tr>`
+                : `<tr>
+                <td>${r.symbol}</td>
+                <td>${r.name}</td>
+                <td class="num">${fmt(r.begin)}</td>
+                <td class="num ${r.end >= r.begin ? "rise" : "fall"}">${fmt(
+                    r.end
+                  )}</td>
+                <td class="num ${r.end >= r.begin ? "rise" : "fall"}">${pct(
+                    r.end,
+                    r.begin
+                  )}</td>
+                <td class="num">${fmt(r.bh)}</td>
+                <td class="num ${r.end >= r.bh ? "rise" : "fall"}">${pct(
+                    r.end,
+                    r.bh
+                  )}</td>
+                <td class="k">${
+                  (r.trades || [])
+                    .map(
+                      (t) => `${t.date} ${t.act}@${fmt(t.price)}×${t.shares}`
+                    )
+                    .join("，") || "—"
+                }</td>
+              </tr>`
+            )
+            .join("")}
+        </tbody>
+        <tfoot>
+          <tr>
+            <td colspan="2"><b>组合合计</b></td>
+            <td class="num">${fmt(total)}</td>
+            <td class="num ${totalEnd >= total ? "rise" : "fall"}">${fmt(
+          totalEnd
+        )}</td>
+            <td class="num ${totalEnd >= total ? "rise" : "fall"}">${pct(
+          totalEnd,
+          total
+        )}</td>
+            <td class="num">${fmt(totalBH)}</td>
+            <td class="num ${totalEnd >= totalBH ? "rise" : "fall"}">${pct(
+          totalEnd,
+          totalBH
+        )}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="muted">假设：等权分配，忽略手续费与滑点；信号以“当日收盘”判定，<u>次日开盘价</u>成交；期末按最新收盘价估值。基准为“周初开盘买入、周末收盘卖出”。</div>
+  `;
+        btwBox.innerHTML = html;
+      }
+
+      /* ================= 小工具 ================= */
+      const round1 = (x) => Math.round(x * 10) / 10,
+        round2 = (x) => Math.round(x * 100) / 100,
+        round3 = (x) => Math.round(x * 1000) / 1000;
+
+      /* ================= 交互 ================= */
       const addBtn = document.getElementById("addBtn");
       const addInput = document.getElementById("addInput");
       addBtn.addEventListener("click", onAdd);
@@ -657,7 +830,7 @@
           return;
         }
         try {
-          const q = await fetchQuote(parsed); // 校验
+          const q = await fetchQuote(parsed); // 校验代码有效
           WATCHLIST.unshift({ symbol: parsed, name: q.name });
           saveWatchlist(WATCHLIST);
           showToast(`已加入：${q.name}（${parsed}）`);
@@ -667,6 +840,7 @@
           showToast(err.message || "该代码不存在或暂不可用", false);
         }
       }
+
       const btn = document.getElementById("refreshBtn");
       btn.addEventListener("click", async () => {
         btn.disabled = true;
@@ -675,6 +849,15 @@
         btn.disabled = false;
         btn.textContent = "立即刷新";
       });
+      const btwBtn = document.getElementById("btwBtn");
+      btwBtn.addEventListener("click", async () => {
+        btwBtn.disabled = true;
+        btwBtn.textContent = "回测中…";
+        await backtestWeek(10000);
+        btwBtn.disabled = false;
+        btwBtn.textContent = "一周回测（¥10,000）";
+      });
+
       render();
       setInterval(render, 60 * 1000);
     </script>
